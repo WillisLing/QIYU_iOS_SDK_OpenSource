@@ -445,7 +445,7 @@ static long long sessionId;
         disableInputView = [self.sessionConfig disableInputView];
     }
     if (!disableInputView) {
-        self.sessionInputView = [[YSFInputView alloc] initWithFrame:inputViewRect inputType:g_inputType];
+        self.sessionInputView = [[NSClassFromString(@"HTYSFInputView") alloc] initWithFrame:inputViewRect inputType:g_inputType];
         _sessionInputView.containerController = self;
         [_sessionInputView setInputConfig:[self sessionConfig]];
         [_sessionInputView setInputActionDelegate:self];
@@ -1058,7 +1058,7 @@ static long long sessionId;
     else {
         contentInset.top = _tipView.ysf_frameBottom;
     }
-    contentInset.bottom = 0;
+//    contentInset.bottom = 0; // LBX MODIFY
     _tableView.contentInset = contentInset;
     _tableView.scrollIndicatorInsets = contentInset;
     _recordTipView.frame     = _tipView.frame;

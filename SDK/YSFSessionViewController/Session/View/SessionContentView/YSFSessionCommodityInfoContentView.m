@@ -52,8 +52,8 @@
     _descLabel.backgroundColor = [UIColor clearColor];
     _descLabel.numberOfLines = 2;
     _descLabel.lineBreakMode = NSLineBreakByTruncatingTail;
-    _descLabel.textColor = YSFRGB(0x666666);
-    _descLabel.font = [UIFont systemFontOfSize:12.f];
+    _descLabel.textColor = YSFRGB(0x333333);
+    _descLabel.font = [UIFont systemFontOfSize:13.f];
     [_descLabel sizeToFit];
     [self addSubview:_descLabel];
     
@@ -61,8 +61,8 @@
     _noteLabel.backgroundColor = [UIColor clearColor];
     _noteLabel.numberOfLines = 1;
     _noteLabel.lineBreakMode = NSLineBreakByTruncatingTail;
-    _noteLabel.textColor = YSFRGB(0xff611b);
-    _noteLabel.font = [UIFont systemFontOfSize:12.f];
+    _noteLabel.textColor = YSFRGB(0x333333);
+    _noteLabel.font = [UIFont boldSystemFontOfSize:15.f];
     [_noteLabel sizeToFit];
     [self addSubview:_noteLabel];
     
@@ -122,25 +122,22 @@
     UIEdgeInsets contentInsets = self.model.contentViewInsets;
     CGSize contentsize = self.model.contentSize;
 
-    _productImageView.ysf_frameLeft = contentInsets.left;
-    _productImageView.ysf_frameTop = contentInsets.top + 5;
-    _productImageView.ysf_frameWidth = 75;
-    _productImageView.ysf_frameHeight = 75;
+    _productImageView.ysf_frameLeft = 10;
+    _productImageView.ysf_frameTop = 12;
+    _productImageView.ysf_frameWidth = 65;
+    _productImageView.ysf_frameHeight = 65;
     
-    _titleLabel.ysf_frameLeft = _productImageView.ysf_frameRight + 10;
-    _titleLabel.ysf_frameTop = contentInsets.top;;
-    _titleLabel.ysf_frameWidth = contentsize.width - _productImageView.ysf_frameWidth - 10;
-    _titleLabel.ysf_frameHeight = 20;
+    _titleLabel.hidden = YES;
 
     _descLabel.ysf_frameLeft = _productImageView.ysf_frameRight + 10;
-    _descLabel.ysf_frameTop = _titleLabel.ysf_frameBottom + 3;
-    _descLabel.ysf_frameWidth = contentsize.width - _productImageView.ysf_frameWidth - 10;
-    _descLabel.ysf_frameHeight = 35;
+    _descLabel.ysf_frameTop = 13;
+    _descLabel.ysf_frameWidth = contentsize.width - _productImageView.ysf_frameWidth - 12;
+    _descLabel.ysf_frameHeight = [_descLabel sizeThatFits:CGSizeMake(contentsize.width, _descLabel.ysf_frameWidth)].height;
     
     _noteLabel.ysf_frameLeft = _productImageView.ysf_frameRight + 10;
-    _noteLabel.ysf_frameTop = _descLabel.ysf_frameBottom + 3;
-    _noteLabel.ysf_frameWidth = contentsize.width - _productImageView.ysf_frameWidth - 10;
-    _noteLabel.ysf_frameHeight = 20;
+    _noteLabel.ysf_frameTop = contentsize.height - 13 - _noteLabel.font.lineHeight;
+    _noteLabel.ysf_frameWidth = contentsize.width - _productImageView.ysf_frameWidth - 12;
+    _noteLabel.ysf_frameHeight = _noteLabel.font.lineHeight;
 }
 
 - (void)onTouchUpInside:(id)sender

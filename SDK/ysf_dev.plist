@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>nim_lbs</key>
+	<string>https://webtest.netease.im/lbs/conf.jsp?devflag=qytest</string>
+	<key>nim_link</key>
+	<string>testlink.netease.im:80</string>
+	<key>nim_module</key>
+	<string>00e3afe7487e6ac9ba69654672672ceddc05d5b6d45850859f11004d30c63e3691afd55722bdd2c75232b2a3561776201f84def8e38c508870ca7692b4228b0478e104460d7800dee3b6c3d8f89746ed48ee94f268f42b9c911437083d3815624e50de3fec3c0ec8ab3e71d5bdce3f4291d20538893cacdc00da9d1390ee39440d</string>
+	<key>ysf_api</key>
+	<string>https://ysf.space</string>
+</dict>
+</plist>

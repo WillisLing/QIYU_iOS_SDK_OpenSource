@@ -6,6 +6,8 @@
 //  Copyright (c) 2015年 NetEase. All rights reserved.
 //
 
+@class YSF_NIMMessage;
+@protocol YSF_NIMCustomAttachment;
 
 @interface YSFMessageMaker : NSObject
 

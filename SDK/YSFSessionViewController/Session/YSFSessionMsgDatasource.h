@@ -6,7 +6,7 @@
 //  Copyright (c) 2015年 NetEase. All rights reserved.
 //
 
-@class YSFMessageModel;
+@class YSFMessageModel, YSF_NIMSession;
 
 @protocol NIMSessionMsgDatasourceDelegate <NSObject>
 

@@ -17,7 +17,7 @@
     CGFloat contentRightToBubble = 14;
     CGFloat msgContentMaxWidth = (msgBubbleMaxWidth - contentRightToBubble - bubbleLeftToContent);
     
-    return CGSizeMake(msgContentMaxWidth, 87);
+    return CGSizeMake(msgContentMaxWidth, 89);
 }
 
 - (NSString *)cellContent
@@ -27,7 +27,7 @@
 
 - (UIEdgeInsets)contentViewInsets
 {
-    return self.message.isOutgoingMsg ? UIEdgeInsetsMake(9, 12, 5, 14) : UIEdgeInsetsMake(9, 14, 5, 12);
+    return self.message.isOutgoingMsg ? UIEdgeInsetsMake(0, 12, 0, 14) : UIEdgeInsetsMake(0, 14, 0, 12);
 }
 
 

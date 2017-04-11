@@ -154,7 +154,7 @@
 {
     YSFLogApp(@"");
 
-    QYSessionViewController *vc = [[QYSessionViewController alloc] init];
+    QYSessionViewController *vc = [[NSClassFromString(@"HTQYSessionViewController") alloc] init];
     return vc;
 }
 

@@ -18,6 +18,8 @@
 #import "YSFKeyboardManager.h"
 #import "QYCustomUIConfig.h"
 
+CGFloat YSFTopInputViewHeight = (50.0+45.0);
+CGFloat YSFTopInputViewMaxHeight = (82+45.0);
 
 @interface YSFInputView()<UITextViewDelegate,YSFInputEmoticonProtocol, YSFKeyboardObserver>
 {
@@ -69,7 +71,7 @@
         };
         [self addSubview:_actionBar];
 
-        _toolBar = [[YSFInputToolBar alloc] initWithFrame:CGRectZero];
+        _toolBar = [[NSClassFromString(@"HTYSFInputToolBar") alloc] initWithFrame:CGRectZero];
         [_toolBar.emoticonBtn addTarget:self action:@selector(onTouchEmoticonBtn:) forControlEvents:UIControlEventTouchUpInside];
         [_toolBar.voiceBtn addTarget:self action:@selector(onTouchVoiceBtn:) forControlEvents:UIControlEventTouchUpInside];
         [_toolBar.recordButton addTarget:self action:@selector(onTouchRecordBtnDown:) forControlEvents:UIControlEventTouchDown];
@@ -355,7 +357,7 @@
 {
     self.bottomHeight = bottomHeight;
     CGRect fromFrame = self.frame;
-    CGFloat toHeight = self.toolBar.frame.size.height + bottomHeight;
+    CGFloat toHeight = YSFTopInputViewHeight + bottomHeight;
     if (!_actionBar.hidden) {
         toHeight += _actionBar.ysf_frameHeight;
     }

@@ -9,6 +9,7 @@
 #import "YSFMediaItem.h"
 #import "YSFCellLayoutConfig.h"
 
+@class YSF_NIMMessage;
 
 @protocol YSFSessionConfig <NSObject>
 @optional

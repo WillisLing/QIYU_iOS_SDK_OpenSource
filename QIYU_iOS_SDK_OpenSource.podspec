@@ -11,9 +11,9 @@ Pod::Spec.new do |s|
     s.platform = :ios
     s.ios.deployment_target = '7.0'
     s.public_header_files = '**/ExportHeaders/**/*.h'
-    s.source_files = "**/ExportHeaders/**/*.h"
+    # s.source_files = "**/ExportHeaders/**/*.h"
     s.vendored_libraries = '**/libNIMLib.a', '**/libYSFVendor.a', '**/libaacplus.a', '**/libcrypto.a', '**/libevent.a'
-    s.resource  = "**/QYResource.bundle"
+    s.resource  = "**/QYResource.bundle", "**/ysf_dev.plist"
     s.framework = 'UIKit','CoreText','MobileCoreServices','SystemConfiguration','AVFoundation','CoreTelephony','CoreMedia','AudioToolbox'
     s.libraries = 'z','stdc++.6.0.9','sqlite3.0'
     s.requires_arc = true
