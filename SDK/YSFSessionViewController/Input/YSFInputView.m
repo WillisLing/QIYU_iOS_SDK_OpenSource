@@ -307,6 +307,10 @@ CGFloat YSFTopInputViewMaxHeight = (82+45.0);
 
 #pragma mark - UIKeyboardNotification
 - (void)keyboardChangedWithTransition:(YSFKeyboardTransition)transition {
+    if (CGRectEqualToRect(transition.fromFrame, transition.toFrame)) {
+        // LBX MODIFY
+        return;
+    }
     [UIView animateWithDuration:transition.animationDuration delay:0 options:transition.animationOption animations:^{
         [self willShowKeyboardFromFrame:transition.toFrame];
 
