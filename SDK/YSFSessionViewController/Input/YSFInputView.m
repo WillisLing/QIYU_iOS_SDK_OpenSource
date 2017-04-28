@@ -371,6 +371,10 @@ CGFloat YSFTopInputViewMaxHeight = (82+45.0);
     {
         return;
     }
+    if (CGRectEqualToRect(fromFrame, toFrame)) {
+        // LBX MODIFY
+        return;
+    }
     self.frame = toFrame;
     
     if (bottomHeight == 0) {
