@@ -16,7 +16,7 @@
 #import "YSFInputToolBar.h"
 #import "YSFInputTextView.h"
 #import "YSFKeyboardManager.h"
-#import "../../YSFSDK/ExportHeaders/QYCustomUIConfig.h"
+#import "QYCustomUIConfig.h"
 
 CGFloat YSFTopInputViewHeight = (50.0+45.0);
 CGFloat YSFTopInputViewMaxHeight = (82+45.0);
