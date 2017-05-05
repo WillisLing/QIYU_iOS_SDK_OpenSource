@@ -16,7 +16,7 @@
 #import "YSFInputToolBar.h"
 #import "YSFInputTextView.h"
 #import "YSFKeyboardManager.h"
-#import "QYCustomUIConfig.h"
+#import "../../YSFSDK/ExportHeaders/QYCustomUIConfig.h"
 
 CGFloat YSFTopInputViewHeight = (50.0+45.0);
 CGFloat YSFTopInputViewMaxHeight = (82+45.0);
@@ -62,13 +62,6 @@ CGFloat YSFTopInputViewMaxHeight = (82+45.0);
         _actionBar = [[YSFActionBar alloc] init];
         _actionBar.hidden = YES;
         _actionBar.ysf_frameHeight = YSFActionBarHeight;
-        __weak typeof(self) weakSelf = self;
-        _actionBar.selectActionCallback = ^(YSFActionInfo *action)
-        {
-            if ([weakSelf.actionDelegate respondsToSelector:@selector(onSendText:)]) {
-                [weakSelf.actionDelegate onSendText:action.label];
-            }
-        };
         [self addSubview:_actionBar];
 
         _toolBar = [[NSClassFromString(@"HTYSFInputToolBar") alloc] initWithFrame:CGRectZero];
@@ -88,6 +81,7 @@ CGFloat YSFTopInputViewMaxHeight = (82+45.0);
         [_toolBar.recordButton setHidden:YES];
         [_toolBar.recordLabel setHidden:YES];
         
+        __weak typeof(self) weakSelf = self;
         [_toolBar.imageButton addTarget:self action:@selector(onTouchImageBtn:) forControlEvents:UIControlEventTouchUpInside];
         _toolBar.inputTextView.pasteImageCallback = ^(UIImage *image) {
             [weakSelf.actionDelegate onPasteImage:image];
@@ -127,7 +121,7 @@ CGFloat YSFTopInputViewMaxHeight = (82+45.0);
 
 }
 
-- (void)setActionInfoArray:(NSArray *)actionInfoArray
+- (void)setActionInfoArray:(NSArray<YSFActionInfo *> *)actionInfoArray
 {
     if (_actionBar.actionInfoArray.count == 0 && actionInfoArray.count > 0) {
         self.ysf_frameHeight += YSFActionBarHeight;
@@ -139,6 +133,11 @@ CGFloat YSFTopInputViewMaxHeight = (82+45.0);
     _actionBar.hidden = actionInfoArray.count == 0;
     
     [self willShowBottomHeight:_bottomHeight];
+}
+
+- (void)setActionCallback:(SelectActionCallback)callback
+{
+    _actionBar.selectActionCallback = callback;
 }
 
 - (void)setInputActionDelegate:(id<YSFInputActionDelegate>)actionDelegate
