@@ -17,9 +17,9 @@
 @class YSFInputEmoticonContainerView;
 @class YSFInputToolBar;
 
-#define YSFActionBarHeight 0 // 41.0
-extern CGFloat YSFTopInputViewHeight;
-extern CGFloat YSFTopInputViewMaxHeight;
+#define YSFActionBarHeight 45.0
+#define YSFTopInputViewHeight 50.0
+#define YSFTopInputViewMaxHeight 82
 #define YSFBottomInputViewHeight 216.0
 
 typedef NS_ENUM(NSInteger, NIMInputType){

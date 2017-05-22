@@ -29,6 +29,7 @@
     UIView *tmpView = [UIView new];
     _splitLine = tmpView;
     _splitLine.backgroundColor = YSFRGB(0xd8d8d8);
+    _splitLine.hidden = YES;
     [self addSubview:_splitLine];
     
     _scrollView = [UIScrollView new];
@@ -41,17 +42,17 @@
         button = [[UIButton alloc] init];
         button.titleEdgeInsets = UIEdgeInsetsMake(0, 10, 0, 10);
         [button addTarget:self action:@selector(onClickAction:) forControlEvents:UIControlEventTouchUpInside];
-        button.titleLabel.font = [UIFont systemFontOfSize:12];
+        button.titleLabel.font = [UIFont systemFontOfSize:13];
         button.layer.borderColor = [QYCustomUIConfig sharedInstance].actionButtonBorderColor.CGColor;
-        button.layer.cornerRadius = 10;
-        button.layer.borderWidth = 0.5;
+        button.layer.cornerRadius = 14;
+        button.layer.borderWidth = 1;
         [button setTitleColor:[QYCustomUIConfig sharedInstance].actionButtonTextColor forState:UIControlStateNormal];
         [button setTitle:obj.label forState:UIControlStateNormal];
         [button sizeToFit];
-        button.ysf_frameWidth += 20;
+        button.ysf_frameWidth += 27;
         button.ysf_frameTop = 10;
         button.ysf_frameLeft = right + 10;
-        button.ysf_frameHeight = 22;
+        button.ysf_frameHeight = 27;
         button.tag = idx;
         [_scrollView addSubview:button];
         

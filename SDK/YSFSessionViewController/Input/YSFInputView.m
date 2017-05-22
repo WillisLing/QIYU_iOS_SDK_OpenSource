@@ -18,8 +18,6 @@
 #import "YSFKeyboardManager.h"
 #import "QYCustomUIConfig.h"
 
-CGFloat YSFTopInputViewHeight = (50.0+45.0);
-CGFloat YSFTopInputViewMaxHeight = (82+45.0);
 
 @interface YSFInputView()<UITextViewDelegate,YSFInputEmoticonProtocol, YSFKeyboardObserver>
 {
@@ -360,7 +358,7 @@ CGFloat YSFTopInputViewMaxHeight = (82+45.0);
 {
     self.bottomHeight = bottomHeight;
     CGRect fromFrame = self.frame;
-    CGFloat toHeight = YSFTopInputViewHeight + bottomHeight;
+    CGFloat toHeight = self.toolBar.frame.size.height + bottomHeight;
     if (!_actionBar.hidden) {
         toHeight += _actionBar.ysf_frameHeight;
     }
@@ -370,20 +368,20 @@ CGFloat YSFTopInputViewMaxHeight = (82+45.0);
     {
         return;
     }
-    if (CGRectEqualToRect(fromFrame, toFrame)) {
-        // LBX MODIFY
-        return;
-    }
+    
+    BOOL frameChanged = !CGRectEqualToRect(fromFrame, toFrame); // LBX MODIFY
     self.frame = toFrame;
     
-    if (bottomHeight == 0) {
-        if (self.inputDelegate && [self.inputDelegate respondsToSelector:@selector(hideInputView)]) {
-            [self.inputDelegate hideInputView];
-        }
-    } else
-    {
-        if (self.inputDelegate && [self.inputDelegate respondsToSelector:@selector(showInputView)]) {
-            [self.inputDelegate showInputView];
+    if (frameChanged) { // LBX MODIFY
+        if (bottomHeight == 0) {
+            if (self.inputDelegate && [self.inputDelegate respondsToSelector:@selector(hideInputView)]) {
+                [self.inputDelegate hideInputView];
+            }
+        } else
+        {
+            if (self.inputDelegate && [self.inputDelegate respondsToSelector:@selector(showInputView)]) {
+                [self.inputDelegate showInputView];
+            }
         }
     }
     if (self.inputDelegate && [self.inputDelegate respondsToSelector:@selector(inputViewSizeToHeight:showInputView:)]) {
