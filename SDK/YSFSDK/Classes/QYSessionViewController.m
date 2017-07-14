@@ -303,8 +303,12 @@ static long long sessionId;
 
 - (void)makeUI
 {
-    self.navigationController.interactivePopGestureRecognizer.delaysTouchesBegan = NO;
+    static dispatch_once_t onceToken;
+    dispatch_once(&onceToken, ^{
+        [[QYSDK sharedSDK].infoManager initSessionViewControllerInfo];
+    });
 
+    self.navigationController.interactivePopGestureRecognizer.delaysTouchesBegan = NO;
     self.navigationItem.title = [self sessionTitle];
     
     //两个按钮的父类view
@@ -2058,17 +2062,6 @@ static long long sessionId;
 - (BOOL)canBecomeFirstResponder
 {
     return YES;
-}
-
-- (BOOL)canPerformAction:(SEL)action withSender:(id)sender
-{
-    NSArray *items = [[UIMenuController sharedMenuController] menuItems];
-    for (UIMenuItem *item in items) {
-        if (action == [item action]){
-            return YES;
-        }
-    }
-    return NO;
 }
 
 - (void)changePlayAudioMode:(id)sender
