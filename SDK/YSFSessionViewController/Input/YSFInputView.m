@@ -304,6 +304,10 @@
 
 #pragma mark - UIKeyboardNotification
 - (void)keyboardChangedWithTransition:(YSFKeyboardTransition)transition {
+    if (self.ysf_viewController.presentedViewController) {
+        // LBX MODIFY
+        return;
+    }
     if (CGRectEqualToRect(transition.fromFrame, transition.toFrame)) {
         // LBX MODIFY
         return;

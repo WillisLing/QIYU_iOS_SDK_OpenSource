@@ -34,6 +34,7 @@
     
     _scrollView = [UIScrollView new];
     _scrollView.showsHorizontalScrollIndicator = NO;
+    _scrollView.scrollsToTop = NO; // LBX MODIFY: iOS8点击状态栏
     [self addSubview:_scrollView];
 
     __block UIButton *button = nil;
