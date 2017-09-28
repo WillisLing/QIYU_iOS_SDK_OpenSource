@@ -1,13 +1,13 @@
 Pod::Spec.new do |s|
 
     s.name     = 'QIYU_iOS_SDK_OpenSource'
-    s.version  = '3.11.0'
+    s.version  = '3.11.2'
     s.license  = { :"type" => "Copyright",
                  :"text" => " Copyright 2016 Netease \n"}  
     s.summary  = '网易七鱼客服访客端 iOS SDK'
     s.homepage = 'http://www.qiyukf.com'
     s.author   = { 'qiyukf' => 'yunshangfu@126.com' }
-    s.source   = { :git => 'https://github.com/qiyukf/QIYU_iOS_SDK_OpenSource.git', :tag => "3.11.0" }
+    s.source   = { :git => 'https://github.com/qiyukf/QIYU_iOS_SDK_OpenSource.git', :tag => "3.11.2" }
     s.platform = :ios
     s.ios.deployment_target = '7.0'
     s.public_header_files = '**/ExportHeaders/**/*.h'
@@ -30,7 +30,9 @@ Pod::Spec.new do |s|
                                 #import "NSDictionary+YSF.h"
                                 #import "NIMSDK.h"
                                 #import "UILayoutKit.h"'
-
+    s.xcconfig = {
+        "GCC_PREPROCESSOR_DEFINITIONS" => 'NDEBUG=1'
+    }
     s.subspec 'NIMLib' do |ss|
         ss.public_header_files = '**/NIMLib/**/*.h'
         ss.source_files = "**/NIMLib/**/*.{h}"

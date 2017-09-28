@@ -490,6 +490,9 @@ static long long sessionId;
     self.tableView.separatorStyle = UITableViewCellSeparatorStyleNone;
     self.tableView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
     self.tableView.backgroundView = [[QYCustomUIConfig sharedInstance] sessionBackground];
+    self.tableView.estimatedRowHeight = 0;
+    self.tableView.estimatedSectionHeaderHeight = 0;
+    self.tableView.estimatedSectionFooterHeight = 0;
     UITapGestureRecognizer *singleTapRecognizer = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(onSingleTap:)];
     singleTapRecognizer.numberOfTapsRequired = 1;
     singleTapRecognizer.numberOfTouchesRequired = 1;
@@ -1127,7 +1130,10 @@ static long long sessionId;
     [[[QYSDK sharedSDK] infoManager] setCachedText:text];
 }
 
-- (void)viewDidLayoutSubviews{
+- (void)viewDidLayoutSubviews
+{
+    [super viewDidLayoutSubviews];
+    
     if (self.sessionBackground) {
         self.sessionBackground.frame = self.view.frame;
     }
@@ -1165,13 +1171,13 @@ static long long sessionId;
     else {
         contentInset.top = _tipView.ysf_frameBottom;
     }
-    
+
     /*
-    if (YSFIOS11) {
+    if (YSFIOS11 && self.navigationController.navigationBar.translucent) {
         contentInset.top -= self.navigationController.navigationBar.ysf_frameBottom;
     }
     contentInset.bottom = 0; // LBX MODIFY
-     */
+    */
     
     _tableView.contentInset = contentInset;
     _tableView.scrollIndicatorInsets = contentInset;
@@ -1253,7 +1259,6 @@ static long long sessionId;
     UITableViewCell *cell = nil;
     id model = [[_sessionDatasource modelArray] objectAtIndex:indexPath.row];
     if ([model isKindOfClass:[YSFMessageModel class]]) {
-        [self initModelLayoutConfig:model];
         cell = [YSFMessageCellMaker cellInTable:tableView
                                  forMessageMode:model];
         [(YSFMessageCell *)cell setMessageDelegate:self];
@@ -1561,7 +1566,7 @@ static long long sessionId;
 
 #pragma mark - Private
 
-- (void)initModelLayoutConfig:(YSFMessageModel *)model{
+- (void)layoutConfig:(YSFMessageModel *)model{
     if (model.layoutConfig == nil) {
         id<YSFCellLayoutConfig> layoutConfig;
         if ([self.sessionConfig respondsToSelector:@selector(layoutConfigWithMessage:)]) {
@@ -1572,10 +1577,6 @@ static long long sessionId;
         }
         model.layoutConfig = layoutConfig;
     }
-}
-
-- (void)layoutConfig:(YSFMessageModel *)model{
-    [self initModelLayoutConfig:model];
     [model calculateContent:self.tableView.ysf_frameWidth];
 }
 
@@ -1738,7 +1739,7 @@ static long long sessionId;
     }
     YSF_NIMMessage *message = [YSFMessageMaker msgWithText:text];
     [self sendMessage:message];
-    return true;
+    return YES;
 }
 
 - (void)onSelectChartlet:(NSString *)chartletId
@@ -1949,6 +1950,7 @@ static long long sessionId;
         YSFMoreOrderListViewController *vc = [YSFMoreOrderListViewController new];
         vc.modalPresentationStyle = UIModalPresentationCustom;
         vc.modalTransitionStyle = UIModalTransitionStyleCoverVertical;
+        vc.showTop = YES;
         vc.titleString = orderList.label;
         vc.action = orderList.action;
         vc.originalData = orderList.shops;
@@ -2742,9 +2744,7 @@ static long long sessionId;
     YSFSessionManager *sessionManager = [[QYSDK sharedSDK] sessionManager];
     if ([sessionManager getSession:_shopId] && [sessionManager getSession:_shopId].sessionId == session.sessionId) {
         [self clearSessionState];
-        _closeSession.hidden = NO;
         _closeSession.enabled = NO;
-        _closeSessionText.hidden = NO;
         _closeSessionText.enabled = NO;
         
         if (_evaluation.enabled == YES) {
