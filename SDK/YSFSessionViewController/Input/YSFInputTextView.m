@@ -163,7 +163,7 @@
         
         [self.placeHolder drawInRect:placeHolderRect
                       withAttributes:@{ NSFontAttributeName : self.font,
-                                        NSForegroundColorAttributeName : YSFRGBA2(0xffccd5d8),
+                                        NSForegroundColorAttributeName : YSFRGBA2(0xff999999),
                                         NSParagraphStyleAttributeName : paragraphStyle }];
     }
 }

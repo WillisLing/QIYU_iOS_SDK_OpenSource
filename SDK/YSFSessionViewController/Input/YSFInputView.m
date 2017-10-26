@@ -368,10 +368,12 @@
     }
     CGRect toFrame = CGRectMake(fromFrame.origin.x, fromFrame.origin.y + (fromFrame.size.height - toHeight), fromFrame.size.width, toHeight);
     
+    /* LBX MODIFY
     if(bottomHeight == 0 && self.frame.size.height == self.toolBar.frame.size.height)
     {
         return;
     }
+     */
     
     BOOL frameChanged = !CGRectEqualToRect(fromFrame, toFrame); // LBX MODIFY
     self.frame = toFrame;

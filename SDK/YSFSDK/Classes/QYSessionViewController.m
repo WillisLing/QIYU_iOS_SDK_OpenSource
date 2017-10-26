@@ -2836,7 +2836,7 @@ static long long sessionId;
 {
     BOOL shouldSend = ![self isLastMessageKFBypassNotificationAndEnable];
     if (!shouldSend) {
-        UIWindow *topmostWindow = [[[UIApplication sharedApplication] windows] lastObject];
+        UIWindow *topmostWindow = [UIApplication sharedApplication].delegate.window;// MJM MODIFY: 防止toast加在keyboard展示不出来
         [topmostWindow ysf_makeToast:@"为了给您提供更专业的服务，请您选择要咨询的内容类型" duration:2.0 position:YSFToastPositionCenter];
         return NO;
     }
