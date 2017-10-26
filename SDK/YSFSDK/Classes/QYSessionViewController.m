@@ -1153,6 +1153,10 @@ static long long sessionId;
     self.sessionInputView.ysf_frameWidth = self.view.ysf_frameWidth;
     self.sessionInputView.ysf_frameBottom = self.view.ysf_frameHeight;
     self.sessionInputView.ysf_frameBottom -= [[QYCustomUIConfig sharedInstance] bottomMargin];
+    if (YSFIOS11) {
+        self.sessionInputView.ysf_frameBottom -= self.view.safeAreaInsets.bottom;
+        _tableView.contentInsetAdjustmentBehavior = UIScrollViewContentInsetAdjustmentNever;
+    }
     
     [_tipView setNeedsLayout];
     _tipView.ysf_frameLeft        = _tableView.ysf_frameLeft;
@@ -1172,13 +1176,7 @@ static long long sessionId;
         contentInset.top = _tipView.ysf_frameBottom;
     }
 
-    /*
-    if (YSFIOS11 && self.navigationController.navigationBar.translucent) {
-        contentInset.top -= self.navigationController.navigationBar.ysf_frameBottom;
-    }
-    contentInset.bottom = 0; // LBX MODIFY
-    */
-    
+    // contentInset.bottom = 0; // LBX MODIFY
     _tableView.contentInset = contentInset;
     _tableView.scrollIndicatorInsets = contentInset;
     _recordTipView.frame     = _tipView.frame;
@@ -1191,6 +1189,12 @@ static long long sessionId;
         if ([QYCustomUIConfig sharedInstance].autoShowKeyboard && g_inputType != InputTypeAudio) {
             [self.sessionInputView.toolBar.inputTextView becomeFirstResponder];
         }
+        
+        CGFloat safeAreaBottom = 0;
+        if (YSFIOS11) {
+            safeAreaBottom = self.view.safeAreaInsets.bottom;
+        }
+        _tableView.ysf_frameHeight -= safeAreaBottom;
     }
 }
 //最后一条消息是否是访客分流信息并且能够点击
