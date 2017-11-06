@@ -31,6 +31,8 @@
 
 @class YSFReachability;
 typedef void (^ChangeHumanOrRobotBlock)(BOOL humanOrRobot);
+typedef void (^ChangeEvaluationEnabledBlock)(BOOL evaluationEnabled);
+typedef void (^OnEvaluateBlock)(long long sessionId, NSString *evaluationMessageInvite, NSString *evaluationMessageThanks);
 
 
 @interface QYSessionViewController ()
@@ -62,6 +64,8 @@ YSFSessionTipViewDelegate>
 @property (nonatomic,strong)                YSFReachability *reachability;
 @property (nonatomic,strong)                YSFCustomLeftBarView *leftBarView;
 @property (nonatomic,copy)                  ChangeHumanOrRobotBlock changeHumanOrRobotBlock;
+@property (nonatomic,copy)                  ChangeEvaluationEnabledBlock changeEvaluationEnabledBlock;
+@property (nonatomic,copy)                  OnEvaluateBlock onEvaluateBlock;
 
 
 - (NSArray *)menusItems:(YSF_NIMMessage *)message;
@@ -83,5 +87,8 @@ YSFSessionTipViewDelegate>
 
 - (void)sendCloseSessionCustomMessage:(BOOL)quitWaitingOrCloseSession
                     completetionBlock:(void (^)(BOOL isSuccess))completetionBlock;
+
+- (void)sendEvaluationRequest:(NSUInteger)score remarks:(NSString *)remarks
+                       tagIds:(NSArray *)tagIds sessionId:(long long)sessionId;
 
 @end

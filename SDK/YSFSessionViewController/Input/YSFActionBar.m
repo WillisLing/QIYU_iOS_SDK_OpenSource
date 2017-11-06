@@ -32,7 +32,10 @@
     _splitLine.hidden = YES;
     [self addSubview:_splitLine];
     
-    _scrollView = [UIScrollView new];
+    if (!_scrollView) {
+        _scrollView = [UIScrollView new];
+    }
+    [_scrollView ysf_removeAllSubviews];
     _scrollView.showsHorizontalScrollIndicator = NO;
     _scrollView.scrollsToTop = NO; // LBX MODIFY: iOS8点击状态栏
     [self addSubview:_scrollView];

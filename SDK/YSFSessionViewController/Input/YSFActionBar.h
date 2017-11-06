@@ -1,5 +1,3 @@
-#import "UILayoutKit.h"
-
 typedef NS_ENUM(NSInteger, QYActionType) {
     QYActionTypeSend,
     QYActionTypeOpenUrl,
@@ -21,5 +19,6 @@ typedef void (^SelectActionCallback)(YSFActionInfo *action);
 
 @property (nonatomic, copy) SelectActionCallback selectActionCallback;
 @property (nonatomic, strong) NSArray *actionInfoArray;
+@property (nonatomic,strong,readonly)    UIScrollView *scrollView;
 
 @end
