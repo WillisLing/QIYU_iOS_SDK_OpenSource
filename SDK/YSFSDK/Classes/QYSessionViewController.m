@@ -984,21 +984,20 @@ static long long sessionId;
     [_popTipView dismissAnimated:YES];
     NSDictionary *dict = [[[QYSDK sharedSDK] sessionManager] getEvaluationInfoByShopId:_shopId];
     long long sessionId = ((NSNumber *)[dict objectForKey:YSFCurrentSessionId]).longLongValue;
-    NSString *evaluationMessageInvite = [dict ysf_jsonString:YSFApiKeyEvaluationMessageInvite];
     NSString *evaluationMessageThanks = [dict ysf_jsonString:YSFApiKeyEvaluationMessageThanks];
     NSDictionary *evaluationData = [dict objectForKey:YSFEvaluationData];
 
     [self showEvaluationViewController:nil sessionId:sessionId evaluationData:evaluationData
-               evaluationMessageInvite:evaluationMessageInvite evaluationMessageThanks:evaluationMessageThanks];
+               evaluationMessageThanks:evaluationMessageThanks];
 }
 
-- (void)showEvaluationResult:(BOOL)done evaluationText:(NSString *)evaluationText remarks:(NSString *)remarks
-             evaluationMessageInvite:(NSString *)evaluationMessageInvite evaluationMessageThanks:(NSString *)evaluationMessageThanks
-              updatedMessage:(YSF_NIMMessage *)updatedMessage
+- (void)showEvaluationResult:(BOOL)needShow kaolaTipContent:(NSString *)kaolaTipContent
+                 evaluationMessageThanks:(NSString *)evaluationMessageThanks evaluationText:(NSString *)evaluationText
+                      updatedMessage:(YSF_NIMMessage *)updatedMessage
 {
     [_sessionInputView addKeyboardObserver];
     
-    if (!done) {
+    if (!needShow) {
         return;
     }
     
@@ -1010,6 +1009,7 @@ static long long sessionId;
     
     YSFEvaluationTipObject *customMachine = [[YSFEvaluationTipObject alloc] init];
     customMachine.command = YSFCommandEvaluationTip;
+    customMachine.kaolaTipContent = kaolaTipContent;
     if (evaluationMessageThanks.length > 0) {
         customMachine.tipContent = evaluationMessageThanks;
     }
@@ -1065,7 +1065,7 @@ static long long sessionId;
     [_sessionInputView removeKeyboardObserver];
 }
 
-- (void)showEvaluationViewController:(YSF_NIMMessage *)updatedMessage sessionId:(long long)sessionId evaluationData:(NSDictionary *)evaluationData evaluationMessageInvite:(NSString *)evaluationMessageInvite
+- (void)showEvaluationViewController:(YSF_NIMMessage *)updatedMessage sessionId:(long long)sessionId evaluationData:(NSDictionary *)evaluationData
              evaluationMessageThanks:(NSString *)evaluationMessageThanks
 {
     if (!sessionId) {
@@ -1075,8 +1075,8 @@ static long long sessionId;
     [self evaluationViewControlerWillAppear];
     
     __weak typeof(self) weakSelf = self;
-    EvaluationCallback evaluationCallback = ^(BOOL done, NSString *evaluationText, NSString *remarks){
-        [weakSelf showEvaluationResult:done evaluationText:evaluationText remarks:remarks evaluationMessageInvite:evaluationMessageInvite evaluationMessageThanks:evaluationMessageThanks updatedMessage:updatedMessage];
+    EvaluationCallback evaluationCallback = ^(BOOL done, NSString *evaluationText){
+        [weakSelf showEvaluationResult:done kaolaTipContent:@"" evaluationMessageThanks:evaluationMessageThanks evaluationText:evaluationText updatedMessage:updatedMessage];
     };
     YSFEvaluationViewController *vc = [[YSFEvaluationViewController alloc] initWithEvaluationDict:evaluationData shopId:_shopId sessionId:sessionId evaluationCallback:evaluationCallback];
     vc.modalPresentationStyle = UIModalPresentationCustom;
@@ -1760,7 +1760,7 @@ static long long sessionId;
         request.sessionId = session.sessionId;
         request.content = weakSelf.lastMessageContent;
         request.endTime = [[NSDate date] timeIntervalSince1970];
-        [YSFIMCustomSystemMessageApi sendMessage:request completion:^(NSError *error) {}];
+        [YSFIMCustomSystemMessageApi sendMessage:request shopId:_shopId completion:^(NSError *error) {}];
         weakSelf.lastMessageContent = nil;
         
         if (delaySend) {
@@ -1776,7 +1776,7 @@ static long long sessionId;
 - (void)onTextChanged:(id)sender
 {
     self.lastMessageContent = _sessionInputView.toolBar.inputTextView.text;
-   [self SendInputtingMessage:NO];
+    [self SendInputtingMessage:NO];
 }
 
 - (BOOL)onSendText:(NSString *)text
@@ -1798,6 +1798,8 @@ static long long sessionId;
     }
     YSF_NIMMessage *message = [YSFMessageMaker msgWithText:text];
     [self sendMessage:message];
+    
+    self.lastMessageContent = nil;
     return YES;
 }
 
@@ -1987,11 +1989,11 @@ static long long sessionId;
         YSFInviteEvaluationObject *object = customObject.attachment;
 
         if (_onEvaluateBlock) {
-            _onEvaluateBlock(object.sessionId, object.evaluationMessageInvite, object.evaluationMessageThanks);
+            _onEvaluateBlock(object.sessionId, event.message);
         }
         else {
             [self showEvaluationViewController:event.message sessionId:object.sessionId evaluationData:object.evaluationDict
-                       evaluationMessageInvite:object.evaluationMessageInvite evaluationMessageThanks:object.evaluationMessageThanks];
+                    evaluationMessageThanks:object.evaluationMessageThanks];
         }
 
         handled = YES;
@@ -3087,8 +3089,7 @@ static long long sessionId;
 }
 
 - (void)sendEvaluationRequest:(long long)sessionId score:(NSUInteger)score remarks:(NSString *)remarks
-                       tagIds:(NSArray *)tagIds
-                       callback:(void (^)(NSError *error))callback
+                       tagIds:(NSArray *)tagIds callback:(void (^)(NSError *error))callback
 {
     YSFEvaluationRequest *request = [[YSFEvaluationRequest alloc] init];
     request.score = score;

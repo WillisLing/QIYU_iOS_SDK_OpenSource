@@ -496,11 +496,13 @@
                     self.inputType = InputTypeAudio;
                     if ([self.toolBar.inputTextView isFirstResponder]) {
                         _inputBottomViewHeight = 0;
+                        [_emoticonContainer setHidden:YES];
                         [self.toolBar.inputTextView resignFirstResponder];
                     }
                     else if (_inputBottomViewHeight > 0)
                     {
                         _inputBottomViewHeight = 0;
+                        [_emoticonContainer setHidden:YES];
                         [self willShowBottomHeight:_inputBottomViewHeight];
                     }
                     [self inputTextViewChangeHeight:YSFTopInputViewHeight];;
@@ -656,18 +658,36 @@
 
 - (void)textViewDidChange:(UITextView *)textView
 {
-    NSString *str = textView.text;
-    if (str.length > self.maxTextLength) {
-        textView.text = [str substringToIndex:self.maxTextLength];
+    if ([self textViewHasChanged:textView]) {
+        NSString *str = textView.text;
+        if (str.length > self.maxTextLength) {
+            textView.text = [str substringToIndex:self.maxTextLength];
+        }
+        
+        if (self.actionDelegate && [self.actionDelegate respondsToSelector:@selector(onTextChanged:)])
+        {
+            [self.actionDelegate onTextChanged:self];
+        }
+        [self inputTextViewToHeight:[self getTextViewContentH:textView]];
     }
-    
-    if (self.actionDelegate && [self.actionDelegate respondsToSelector:@selector(onTextChanged:)])
-    {
-        [self.actionDelegate onTextChanged:self];
-    }
-    [self inputTextViewToHeight:[self getTextViewContentH:textView]];
 }
 
+-(BOOL)textViewHasChanged:(UITextView *)textView
+{    NSString *lang = [(UITextInputMode*)[[UITextInputMode activeInputModes] firstObject] primaryLanguage]; // 键盘输入模式
+    if ([lang isEqualToString:@"zh-Hans"])
+    {
+        UITextRange *selectedRange = [textView markedTextRange];
+        UITextPosition *position = [textView positionFromPosition:selectedRange.start offset:0];
+        if (!position) {
+            return YES;
+        }
+    }
+    else {
+        return YES;
+    }
+    
+    return NO;
+}
 
 #pragma mark - InputEmoticonProtocol
 - (void)selectedEmoticon:(NSString*)emoticonID catalog:(NSString*)emotCatalogID description:(NSString *)description{
@@ -761,7 +781,9 @@
         [self.actionDelegate OnMediaPicturePressed];
         self.inputType = InputTypeText;
         _inputBottomViewHeight = 0;
+        [_emoticonContainer setHidden:YES];
         [self endTextEditWithInputBottomViewHeight:0];
+        [self updateAllButtonImages];
     }
 }
 

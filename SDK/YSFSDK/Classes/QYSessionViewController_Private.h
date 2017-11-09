@@ -32,7 +32,7 @@
 @class YSFReachability;
 typedef void (^ChangeHumanOrRobotBlock)(BOOL humanOrRobot);
 typedef void (^ChangeEvaluationEnabledBlock)(BOOL evaluationEnabled);
-typedef void (^OnEvaluateBlock)(long long sessionId, NSString *evaluationMessageInvite, NSString *evaluationMessageThanks);
+typedef void (^OnEvaluateBlock)(long long sessionId, YSF_NIMMessage *updateMessage);
 
 
 @interface QYSessionViewController ()
@@ -88,7 +88,11 @@ YSFSessionTipViewDelegate>
 - (void)sendCloseSessionCustomMessage:(BOOL)quitWaitingOrCloseSession
                     completetionBlock:(void (^)(BOOL isSuccess))completetionBlock;
 
-- (void)sendEvaluationRequest:(NSUInteger)score remarks:(NSString *)remarks
-                       tagIds:(NSArray *)tagIds sessionId:(long long)sessionId;
+- (void)showEvaluationResult:(BOOL)needShow kaolaTipContent:(NSString *)kaolaTipContent
+     evaluationMessageThanks:(NSString *)evaluationMessageThanks evaluationText:(NSString *)evaluationText
+              updatedMessage:(YSF_NIMMessage *)updatedMessage;
+
+- (void)sendEvaluationRequest:(long long)sessionId score:(NSUInteger)score remarks:(NSString *)remarks
+                       tagIds:(NSArray *)tagIds callback:(void (^)(NSError *error))callback;
 
 @end
