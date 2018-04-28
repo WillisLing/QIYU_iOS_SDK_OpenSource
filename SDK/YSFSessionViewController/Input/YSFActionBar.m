@@ -51,7 +51,7 @@
         button.layer.cornerRadius = 14;
         button.layer.borderWidth = 1;
         [button setTitleColor:[QYCustomUIConfig sharedInstance].actionButtonTextColor forState:UIControlStateNormal];
-        [button setTitle:obj.label forState:UIControlStateNormal];
+        [button setTitle:obj.title forState:UIControlStateNormal];
         [button sizeToFit];
         button.ysf_frameWidth += 27;
         button.ysf_frameTop = 10;
