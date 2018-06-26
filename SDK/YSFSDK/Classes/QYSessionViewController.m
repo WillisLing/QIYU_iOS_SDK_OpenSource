@@ -61,7 +61,12 @@
 #import "YSFSendInputtingMessageRequest.h"
 #import "YSFSetEvaluationReasonRequest.h"
 #import "YSFBypassViewController.h"
-
+#import "YSFSendSearchQuestionRequest.h"
+#import "YSFSendSearchQuestionResponse.h"
+#import "KFQuickReplyContentView.h"
+#import "YSFSearchQuestionSetting.h"
+#import "KFNewMsgTipViewToDown.h"
+#import "YSFSearchQuestionSetting.h"
 
 @import MobileCoreServices;
 @import AVFoundation;
@@ -84,7 +89,7 @@ static long long g_sessionId;
 @end
 
 @interface QYSessionViewController()
-<UIImagePickerControllerDelegate, UINavigationControllerDelegate, UIActionSheetDelegate, YSF_NIMSystemNotificationManagerDelegate, YSFAppInfoManagerDelegate, YSFEvaluationReasonViewDelegate>
+<UIImagePickerControllerDelegate, UINavigationControllerDelegate, UIActionSheetDelegate, YSF_NIMSystemNotificationManagerDelegate, YSFAppInfoManagerDelegate, YSFEvaluationReasonViewDelegate, YSFQuickReplyContentViewDelegate>
 @property (nonatomic,assign)    NTESImagePickerMode      mode;
 @property (nonatomic,strong)    UIButton *humanService;
 @property (nonatomic,strong)    UIButton *humanServiceText;
@@ -109,7 +114,8 @@ static long long g_sessionId;
 @property (nonatomic,strong)    YSFPopTipView *popTipView;
 @property (nonatomic,strong)    YSFTimer *inputtingMessage;
 @property (nonatomic,copy)      NSString *lastMessageContent;
-@property (nonatomic,strong)      NSMutableArray<YSFActionInfo *> *ysfActionInfoArray;
+@property (nonatomic,strong)    NSMutableArray<YSFActionInfo *> *ysfActionInfoArray;
+@property (nonatomic, strong)   YSFQuickReplyContentView *quickReplyView;
 
 @end
 
@@ -155,6 +161,9 @@ static long long g_sessionId;
     [self makeUI];
     [self makeHandlerAndDataSource];
     
+    extern NSString *kKFInputViewInputTypeChanged;
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(inputViewInputTypeChanged:) name:kKFInputViewInputTypeChanged object:nil];
+
     __weak typeof(self) weakSelf = self;
     [QYCustomActionConfig sharedInstance].showQuitBlock = ^(QYQuitWaitingBlock showQuitWaitingBlock) {
         YSFSessionManager *sessionManager = [[QYSDK sharedSDK] sessionManager];
@@ -243,6 +252,20 @@ static long long g_sessionId;
     BOOL autoPopUp = [self showEvaluaViewController];
     if (!autoPopUp && [QYCustomUIConfig sharedInstance].autoShowKeyboard && g_inputType != InputTypeAudio) {
         [self.sessionInputView.toolBar.inputTextView becomeFirstResponder];
+    }
+}
+
+- (void)inputViewInputTypeChanged:(NSNotification*)sender {
+    NSNumber *type = (NSNumber*)sender.object;
+    NIMInputType inputType = (NIMInputType)type.integerValue;
+    if (inputType == InputTypeAudio) {
+        if (_quickReplyView) {
+            _quickReplyView.hidden = YES;
+        }
+    } else if (inputType == InputTypeText || inputType == InputTypeEmot) {
+        if (_quickReplyView) {
+            _quickReplyView.hidden = NO;
+        }
     }
 }
 
@@ -603,6 +626,21 @@ static long long g_sessionId;
             }
         }
     }
+    
+    _quickReplyView = [[YSFQuickReplyContentView alloc] initWithFrame:CGRectMake(0, 0, CGRectGetWidth(self.sessionInputView.bounds), 0)];
+    _quickReplyView.delegate = self;
+    _quickReplyView.onlyMatchFirst = YES;
+    _quickReplyView.backgroundColor = [UIColor whiteColor];
+    _quickReplyView.layer.shadowOffset = CGSizeMake(0, -1);
+    _quickReplyView.layer.shadowColor = YSFColorFromRGBA(0xE2E2E2, 0.5).CGColor;
+}
+
+#pragma mark - 快捷回复预览Delegate
+- (void)didTapRowAtIndex:(NSUInteger)index data:(YSFQuickReplyKeyWordAndContent *)data
+{
+    self.sessionInputView.toolBar.inputTextView.text = @"";
+    [self.quickReplyView removeFromSuperview];
+    [self sendMessage:[YSFMessageMaker msgWithText:data.content]];
 }
 
 - (void)setRightButtonViewFrame
@@ -1042,7 +1080,7 @@ static long long g_sessionId;
     [_sessionInputView addKeyboardObserver];
     
     NSMutableDictionary *shopDict = [[[[QYSDK sharedSDK] sessionManager] getEvaluationInfoByShopId:_shopId] mutableCopy];
-    [shopDict setObject:@(NO) forKey:YSFApiEvaluationAutoPopup];
+    [shopDict setValue:@(NO) forKey:YSFApiEvaluationAutoPopup];
     [[[QYSDK sharedSDK] sessionManager] setEvaluationInfo:shopDict shopId:_shopId];
     
     if (!needShow) {
@@ -1050,7 +1088,7 @@ static long long g_sessionId;
     }
     
     if (shopDict) {
-        [shopDict setObject:@(3) forKey:YSFSessionStatus];
+        [shopDict setValue:@(3) forKey:YSFSessionStatus];
         [[[QYSDK sharedSDK] sessionManager] setEvaluationInfo:shopDict shopId:_shopId];
     }
     
@@ -1071,7 +1109,7 @@ static long long g_sessionId;
         [self changeEvaluationButtonToDone];
         
         if (shopDict) {
-            [shopDict setObject:@"-1" forKey:YSFSessionTimes];
+            [shopDict setValue:@"-1" forKey:YSFSessionTimes];
             [[[QYSDK sharedSDK] sessionManager] setEvaluationInfo:shopDict shopId:self.shopId];
         }
     }
@@ -1233,6 +1271,12 @@ static long long g_sessionId;
     [self changeLeftBarBadge:[[YSF_NIMSDK sharedSDK] conversationManager].allUnreadCount];
     BOOL isFirstLayout = CGRectEqualToRect(_layoutManager.viewRect, CGRectZero);
     [_layoutManager setViewRect:self.view.frame];
+    
+    if (self.quickReplyView) {
+        [UIView animateWithDuration:0.3 animations:^{
+            self.quickReplyView.ysf_frameBottom = self.sessionInputView.ysf_frameTop;
+        }];
+    }
     
 //    //补丁
 //    if ([UIApplication sharedApplication].statusBarHidden || (self.presentedViewController != nil && [self.presentedViewController isKindOfClass:[YSFGalleryViewController class]])) {
@@ -1455,7 +1499,7 @@ static long long g_sessionId;
                 else if ([sessionTimesStr isEqualToString:@"2"]) {
                     sessionTimesStr = @"3";
                 }
-                [shopDict setObject:sessionTimesStr forKey:YSFSessionTimes];
+                [shopDict setValue:sessionTimesStr forKey:YSFSessionTimes];
                 [[[QYSDK sharedSDK] sessionManager] setEvaluationInfo:shopDict shopId:_shopId];
             }
         }
@@ -1550,7 +1594,7 @@ static long long g_sessionId;
                 else if ([sessionTimesStr isEqualToString:@"3"]) {
                     sessionTimesStr = @"4";
                 }
-                [shopDict setObject:sessionTimesStr forKey:YSFSessionTimes];
+                [shopDict setValue:sessionTimesStr forKey:YSFSessionTimes];
                 [[[QYSDK sharedSDK] sessionManager] setEvaluationInfo:shopDict shopId:_shopId];
                 
                 if ([sessionTimesStr isEqualToString:@"4"]) {
@@ -1869,8 +1913,6 @@ static long long g_sessionId;
     CGFloat sendingRate = [YSFSystemConfig sharedInstance:_shopId].sendingRate;
 
     if (session && session.humanOrMachine && switchOpen && _inputtingMessage.isStopped && self.lastMessageContent) {
-        [self sendSendInputtingMessageRequest:self.lastMessageContent sessionId:session.sessionId sendingRate:sendingRate];
-        
         __weak typeof(self) weakSelf = self;
         [_inputtingMessage start:dispatch_get_main_queue() interval:sendingRate repeats:NO block:^{
             if (!weakSelf.inputtingMessage.isStopped && weakSelf.lastMessageContent) {
@@ -1892,10 +1934,51 @@ static long long g_sessionId;
     self.lastMessageContent = nil;
 }
 
+- (void)SendSearchQuestion
+{
+    if (![YSFSearchQuestionSetting sharedInstance:_shopId].switchOpen) {
+        return;
+    }
+    
+    if (_lastMessageContent.length > 0 && _lastMessageContent.length <= 10) {
+        YSFServiceSession *session = [[[QYSDK sharedSDK] sessionManager] getSessionInAll:_shopId];
+        CGFloat sendingRate = [YSFSearchQuestionSetting sharedInstance:_shopId].sendingRate;
+        
+        if (session && (!session.humanOrMachine || session.robotInQueue) && _inputtingMessage.isStopped && self.lastMessageContent) {
+            __weak typeof(self) weakSelf = self;
+            [_inputtingMessage start:dispatch_get_main_queue() interval:sendingRate repeats:NO block:^{
+                if (!_inputtingMessage.isStopped && weakSelf.lastMessageContent) {
+                    [weakSelf sendSearchQuestionRequest:weakSelf.lastMessageContent sessionId:session.sessionId sendingRate:sendingRate];
+                }
+            }];
+        }
+    } else {
+        [self clearQuickReplyView];
+    }
+}
+
+- (void)clearQuickReplyView
+{
+    [self.quickReplyView removeFromSuperview];
+    self.quickReplyView.ysf_frameHeight = 0;
+    self.quickReplyView.ysf_frameBottom = self.sessionInputView.ysf_frameTop;
+}
+
+- (void)sendSearchQuestionRequest:(NSString *)lastMessageContent sessionId:(long long)sessionId sendingRate:(CGFloat)sendingRate
+{
+    YSFSendSearchQuestionRequest *request = [[YSFSendSearchQuestionRequest alloc] init];
+    request.sessionId = sessionId;
+    request.content = lastMessageContent;
+
+    [YSFIMCustomSystemMessageApi sendMessage:request shopId:_shopId completion:^(NSError *error) {}];
+    self.lastMessageContent = nil;
+}
+
 - (void)onTextChanged:(id)sender
 {
     self.lastMessageContent = _sessionInputView.toolBar.inputTextView.text;
     [self SendInputtingMessage];
+    [self SendSearchQuestion];
 }
 
 - (BOOL)onSendText:(NSString *)text
@@ -1919,6 +2002,8 @@ static long long g_sessionId;
     [self sendMessage:message];
     
     self.lastMessageContent = nil;
+    [self clearQuickReplyView];
+    
     return YES;
 }
 
@@ -2162,6 +2247,11 @@ static long long g_sessionId;
 
         handled = YES;
     }
+    else if ([eventName isEqualToString:YSFKitEventNameTapPushMessageActionUrl]){
+        [self onTapPushMessageActionUrl:event.data];
+        
+        handled = YES;
+    }
     else if ([eventName isEqualToString:YSFKitEventNameTapFillInBotForm]){
         long long sessionId = event.message.sessionIdFromMessageId;
         YSFSessionManager *sessionManager = [[QYSDK sharedSDK] sessionManager];
@@ -2282,6 +2372,14 @@ static long long g_sessionId;
     }
 }
 
+- (void)onTapPushMessageActionUrl:(NSString *)actionUrl
+{
+    QYLinkClickBlock block = [QYCustomActionConfig sharedInstance].pushMessageClick;
+    if (block) {
+        block(actionUrl);
+    }
+}
+
 - (void)displayFillInBotForm:(YSF_NIMMessage *)message
 {
     [self.view endEditing:YES];
@@ -2370,17 +2468,7 @@ static long long g_sessionId;
 
 - (void)showImage:(YSF_NIMMessage *)message touchView:(UIView *)touchView
 {
-    UIView *conentView = touchView.superview;
-    NSInteger imageViewIndex = 0;
-    for (UIView *imageView in conentView.subviews) {
-        if ([imageView isKindOfClass:[UIImageView class]] && imageView.userInteractionEnabled == YES) {
-            if (touchView == imageView) {
-                break;
-            }
-            imageViewIndex++;
-        }
-    }
-    
+    NSInteger imageViewIndex = touchView.tag;
     NSMutableArray *allGalleryItems = [NSMutableArray array];
     NSMutableArray *allLoadedImages = [self.sessionDatasource queryAllImageMessages];
     __block NSUInteger index = 0;
@@ -2773,7 +2861,9 @@ static long long g_sessionId;
         YSFMessageModel *model = [[YSFMessageModel alloc] initWithMessage:message];
         [self layoutConfig:model];
     }
-    [self.layoutManager insertTableViewCellAtRows:insert];
+    [self.layoutManager insertTableViewCellAtRows:insert scrollToBottom:YES];
+    
+    return;
 }
 
 - (void)uiDeleteMessage:(YSF_NIMMessage *)message{
@@ -2814,6 +2904,7 @@ static long long g_sessionId;
     
     if ([sessionManager shouldRequestService:isInit shopId:_shopId])
     {
+        [[YSFSearchQuestionSetting sharedInstance:_shopId] clear];
         self.hasRequested = YES;
         _evaluation.enabled = NO;
         if (_changeEvaluationEnabledBlock) {
@@ -3077,7 +3168,30 @@ static long long g_sessionId;
             [self queryWaitingStatus:shopId];
         }
     }
-    
+    else if ([object isKindOfClass:[YSFSendSearchQuestionResponse class]])
+    {
+        YSFSendSearchQuestionResponse *sendSearchQuestionResponse = (YSFSendSearchQuestionResponse *)object;
+
+        [_quickReplyView.dataArray removeAllObjects];
+        _quickReplyView.searchText = sendSearchQuestionResponse.content;
+        for (YSFQuickReplyKeyWordAndContent *content in sendSearchQuestionResponse.questionContents) {
+            content.content = content.content;
+            content.isContentRich = NO;
+            [self.quickReplyView.dataArray addObject:content];
+        }
+
+        [self.quickReplyView update];
+        [self.quickReplyView removeFromSuperview];
+        if (self.quickReplyView.dataArray.count) {
+            //动态改变高度
+            if (self.quickReplyView.dataArray.count > 2) {
+                self.quickReplyView.ysf_frameHeight = 121;
+            } else {
+                self.quickReplyView.ysf_frameHeight = self.quickReplyView.dataArray.count * 40;
+            }
+            [self.view addSubview:self.quickReplyView];
+        }
+    }
 }
 
 #pragma mark - 网络变化

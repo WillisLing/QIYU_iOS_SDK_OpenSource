@@ -126,13 +126,13 @@
     }
     NSMutableDictionary *trackHistoryInfo = [NSMutableDictionary new];
     if (title) {
-        [trackHistoryInfo setObject:title forKey:@"title"];
+        [trackHistoryInfo setValue:title forKey:@"title"];
     }
     long long time =  [[NSDate date] timeIntervalSince1970] * 1000;
-    [trackHistoryInfo setObject:@(time) forKey:@"time"];
-    [trackHistoryInfo setObject:@(enterOrOut) forKey:@"enterOrOut"];
+    [trackHistoryInfo setValue:@(time) forKey:@"time"];
+    [trackHistoryInfo setValue:@(enterOrOut) forKey:@"enterOrOut"];
     if (key) {
-        [trackHistoryInfo setObject:key forKey:@"key"];
+        [trackHistoryInfo setValue:key forKey:@"key"];
     }
     [mutableArray addObject:trackHistoryInfo];
     [self saveArray:mutableArray forKey:YSFTrackHistoryInfo];
@@ -209,26 +209,26 @@
 - (void)createAccount
 {
     YSFCreateAccountRequest *request = [[YSFCreateAccountRequest alloc] init];
-    
+    __weak typeof(self) weakSelf = self;
     [YSFHttpApi post:request
              completion:^(NSError *error, id returendObject) {
              if (error == nil && [returendObject isKindOfClass:[YSFAccountInfo class]]) {
-                 _accountInfo = returendObject;
-                 YSFLogApp(@"createAccount success accid: %@", _accountInfo.accid);
+                 weakSelf.accountInfo = returendObject;
+                 YSFLogApp(@"createAccount success accid: %@", weakSelf.accountInfo.accid);
 
                  
                  [self saveAccountInfo];
                  [self login];
                  //创建账号成功后回调
-                 if (_delegate && [_delegate respondsToSelector:@selector(didCreateAccountSuccessfully)]) {
-                     [_delegate didCreateAccountSuccessfully];
+                 if (weakSelf.delegate && [weakSelf.delegate respondsToSelector:@selector(didCreateAccountSuccessfully)]) {
+                     [weakSelf.delegate didCreateAccountSuccessfully];
                  }
              }
              else
              {
                  YSFLogErr(@"createAccount failed %@", error);
                  dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(10 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
-                     [self createAccount];
+                     [weakSelf createAccount];
                  });
              }
          }];
@@ -389,10 +389,10 @@
         
         NSMutableDictionary *userInfo = [NSMutableDictionary new];
         if (_qyUserInfo.userId) {
-            [userInfo setObject:_qyUserInfo.userId forKey:@"id"];
+            [userInfo setValue:_qyUserInfo.userId forKey:@"id"];
         }
         if (_qyUserInfo.data) {
-            [userInfo setObject:_qyUserInfo.data forKey:@"data"];
+            [userInfo setValue:_qyUserInfo.data forKey:@"data"];
         }
         [self saveDict:userInfo forKey:YSFCurrentUserInfoKey];
     }
@@ -508,7 +508,7 @@
 
 - (NSString *)version
 {
-    return @"38";
+    return @"40";
 }
 
 #pragma mark - CachedText

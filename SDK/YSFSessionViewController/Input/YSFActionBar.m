@@ -58,7 +58,7 @@
         button.ysf_frameLeft = right + 10;
         button.ysf_frameHeight = 27;
         button.tag = idx;
-        [_scrollView addSubview:button];
+        [self.scrollView addSubview:button];
         
         right = button.ysf_frameRight;
     }];

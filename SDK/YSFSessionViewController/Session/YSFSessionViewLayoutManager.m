@@ -43,7 +43,7 @@ YSFNotification(kKFInputViewInputTypeChanged);
     _inputView.inputDelegate = nil;
 }
 
--(void)insertTableViewCellAtRows:(NSArray*)addIndexs
+-(void)insertTableViewCellAtRows:(NSArray*)addIndexs scrollToBottom:(BOOL)scrollToBottom
 {
     if (!addIndexs.count) {
         return;
@@ -52,18 +52,27 @@ YSFNotification(kKFInputViewInputTypeChanged);
     [addIndexs enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
         [addIndexPathes addObject:[NSIndexPath indexPathForRow:[obj integerValue] inSection:0]];
     }];
+    
     [_tableView beginUpdates];
     [_tableView insertRowsAtIndexPaths:addIndexPathes withRowAnimation:UITableViewRowAnimationNone];
     [_tableView endUpdates];
     
+    __weak typeof(self) weakSelf = self;
     NSTimeInterval scrollDelay = .05f;
     dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(scrollDelay * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
         NSIndexPath *indexPath = [addIndexPathes lastObject];
-        NSInteger sectionNumber = [_tableView numberOfRowsInSection:indexPath.section];
+        NSInteger sectionNumber = [weakSelf.tableView numberOfRowsInSection:indexPath.section];
         if (indexPath.row > sectionNumber - 1) {
             indexPath = [NSIndexPath indexPathForRow:sectionNumber - 1 inSection:indexPath.section];
         }
-        [_tableView scrollToRowAtIndexPath:indexPath atScrollPosition:UITableViewScrollPositionBottom animated:YES];
+        if ([YSF_NIMSDK sharedSDK].sdkOrKf) {
+            [weakSelf.tableView scrollToRowAtIndexPath:indexPath atScrollPosition:UITableViewScrollPositionTop animated:YES];
+        }
+        else {
+            if (scrollToBottom) {
+                [weakSelf.tableView ysf_scrollToBottom:YES];
+            }
+        }
     });
 }
 
@@ -103,20 +112,18 @@ YSFNotification(kKFInputViewInputTypeChanged);
 - (void)showInputView
 {
     //[_tableView setUserInteractionEnabled:NO];
-    [[NSNotificationCenter defaultCenter]postNotificationName:kKFInputViewFrameChanged object:nil];
+    [[NSNotificationCenter defaultCenter] postNotificationName:kKFInputViewFrameChanged object:nil];
 }
 
 - (void)hideInputView
 {
     //[_tableView setUserInteractionEnabled:YES];
-    [[NSNotificationCenter defaultCenter]postNotificationName:kKFInputViewFrameChanged object:nil];
+    [[NSNotificationCenter defaultCenter] postNotificationName:kKFInputViewFrameChanged object:nil];
 
 }
 
 - (void)inputViewSizeToHeight:(CGFloat)toHeight showInputView:(BOOL)show
 {
-    [[NSNotificationCenter defaultCenter]postNotificationName:kKFInputViewFrameChanged object:nil];
-
     //[_tableView setUserInteractionEnabled:!show];
     dispatch_async(dispatch_get_main_queue(), ^{
         CGRect orginRect = [_tableView frame];
@@ -136,6 +143,7 @@ YSFNotification(kKFInputViewInputTypeChanged);
                 [_tableView setFrame:rect];
             }];
             [_tableView ysf_scrollToBottom:YES];
+            [[NSNotificationCenter defaultCenter] postNotificationName:kKFInputViewFrameChanged object:@(YES)];
         }
     });
     
