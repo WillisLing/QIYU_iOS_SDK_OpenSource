@@ -226,6 +226,19 @@
 #define     YSFApiKeyMiniAppTip         @"miniTrashTip"
 #define     YSFApiKeyLink               @"link"
 #define     YSFApiKeyRichText           @"richText"
+#define     YSFApiKeyOrderList          @"order_list"
+#define     YSFApiKeyOrderStatus2        @"order_status"
+#define     YSFApiKeyRefundDetail       @"refund_detail"
+#define     YSFApiKeyOrderDetail        @"order_detail"
+#define     YSFApiKeyOrderLogistic      @"order_logistic"
+#define     YSFApiKeyActionList         @"action_list"
+#define     YSFApiKeyActivePage         @"active_page"
+#define     YSFApiKeyStaticUnion        @"static_union"
+#define     YSFApiKeyBotForm            @"bot_form"
+#define     YSFApiKeyCardLayout         @"card_layout"
+#define     YSFApiKeyDetailView         @"detail_view"
+#define     YSFApiKeyErrorMsg           @"error_msg"
+#define     YSFApiKeyCustom             @"custom"
 
 
 
@@ -269,6 +282,8 @@ typedef enum : NSUInteger {
     YSFCommandBotSend                   = 202,      //bot
     YSFCommandBotQueryRequest           = 204,      //bot
     YSFCommandBotQueryResponse          = 205,      //bot
+    YSFCommandBotEntry                  = 211,      //实时推送bot入口信息
+
 
 
     //客服端

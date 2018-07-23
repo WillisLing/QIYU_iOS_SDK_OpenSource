@@ -67,6 +67,8 @@
 #import "YSFSearchQuestionSetting.h"
 #import "KFNewMsgTipViewToDown.h"
 #import "YSFSearchQuestionSetting.h"
+#import "YSFBotCustomObject.h"
+#import "YSFBotEntry.h"
 
 @import MobileCoreServices;
 @import AVFoundation;
@@ -1572,6 +1574,9 @@ static long long g_sessionId;
         if ([object isMemberOfClass:[YSFBotForm class]]) {
             [self displayFillInBotForm:message];
         }
+        else if ([object isMemberOfClass:[YSFBotCustomObject class]]) {
+            [self showBotCustomViewController:(YSFBotCustomObject *)object];
+        }
     }
 
     if ([sessionManager getSession:_shopId] && [sessionManager getSession:_shopId].humanOrMachine) {
@@ -1678,6 +1683,13 @@ static long long g_sessionId;
     vc.modalPresentationStyle = UIModalPresentationCustom;
     vc.modalTransitionStyle = UIModalTransitionStyleCrossDissolve;
     [self presentViewController:vc animated:YES completion:nil];
+}
+
+- (void)showBotCustomViewController:(YSFBotCustomObject *)botCustomObject
+{
+    if ([QYCustomActionConfig sharedInstance].showBotCustomInfoBlock) {
+        [QYCustomActionConfig sharedInstance].showBotCustomInfoBlock(botCustomObject.customObject);
+    }
 }
 
 - (void)fetchMessageAttachment:(YSF_NIMMessage *)message progress:(CGFloat)progress
@@ -2197,8 +2209,8 @@ static long long g_sessionId;
         handled = YES;
     }
     else if ([eventName isEqualToString:YSFKitEventNameTapGoods]){
-        YSFGoods *goods = event.data;
-        YSFSelectedGoods *selectedGoods = [[YSFSelectedGoods alloc] init];
+        QYSelectedCommodityInfo *goods = event.data;
+        YSFSelectedCommodityInfo *selectedGoods = [[YSFSelectedCommodityInfo alloc] init];
         selectedGoods.command = YSFCommandBotSend;
         selectedGoods.target = goods.target;
         selectedGoods.params = goods.params;
@@ -2220,15 +2232,9 @@ static long long g_sessionId;
         vc.originalData = orderList.shops;
 
         __weak typeof(self) weakSelf = self;
-        vc.tapItemCallback = ^(YSFGoods *goods)
+        vc.tapItemCallback = ^(QYSelectedCommodityInfo *goods)
         {
-            YSFSelectedGoods *selectedGoods = [[YSFSelectedGoods alloc] init];
-            selectedGoods.command = YSFCommandBotSend;
-            selectedGoods.target = goods.target;
-            selectedGoods.params = goods.params;
-            selectedGoods.goods = goods;
-            YSF_NIMMessage *selectedGoodsMessage = [YSFMessageMaker msgWithCustom:selectedGoods];
-            [weakSelf sendMessage:selectedGoodsMessage];
+            [weakSelf sendSelectedCommodityInfo:goods];
             
             return YES;
         };
@@ -3192,6 +3198,14 @@ static long long g_sessionId;
             [self.view addSubview:self.quickReplyView];
         }
     }
+    else if ([object isKindOfClass:[YSFBotEntry class]])
+    {
+        [_sessionInputView setActionInfoArray:((YSFBotEntry *)object).entryArray];
+        YSFSessionManager *sessionManager = [[QYSDK sharedSDK] sessionManager];
+        if (sessionManager) {
+            [sessionManager getSession:_shopId].actionInfoArray = ((YSFBotEntry *)object).entryArray;
+        }
+    }
 }
 
 #pragma mark - 网络变化
@@ -3458,6 +3472,17 @@ static long long g_sessionId;
     self.commodityInfo = commodityInfo;
     g_commodityInfo = _commodityInfo;
     [self sendCommodityInfoRequest:NO];
+}
+
+- (void)sendSelectedCommodityInfo:(QYSelectedCommodityInfo *)commodityInfo
+{
+    YSFSelectedCommodityInfo *selectedGoods = [[YSFSelectedCommodityInfo alloc] init];
+    selectedGoods.command = YSFCommandBotSend;
+    selectedGoods.target = commodityInfo.target;
+    selectedGoods.params = commodityInfo.params;
+    selectedGoods.goods = commodityInfo;
+    YSF_NIMMessage *selectedGoodsMessage = [YSFMessageMaker msgWithCustom:selectedGoods];
+    [self sendMessage:selectedGoodsMessage];
 }
 
 @end
