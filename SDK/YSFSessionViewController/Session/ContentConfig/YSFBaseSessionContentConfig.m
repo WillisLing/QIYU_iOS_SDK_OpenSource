@@ -22,7 +22,6 @@
 #import "YSFKFBypassContentConfig.h"
 #import "YSFKFBypassNotification.h"
 #import "YSFCommodityInfoContentConfig.h"
-#import "YSFCommodityInfoShow.h"
 #import "YSFOrderList.h"
 #import "YSFOrderListContentConfig.h"
 #import "YSFBotText.h"
@@ -106,7 +105,7 @@
             YSF_NIMCustomObject *customObject = message.messageObject;
             if ([customObject.attachment isKindOfClass:[YSFOrderOperation class]]) {
                 YSFOrderOperation *orderOperation = (YSFOrderOperation *)customObject.attachment;
-                message.text = [orderOperation.template ysf_jsonString:@"label"];
+                message.text = [orderOperation.templateInfo ysf_jsonString:@"label"];
                 config = [[YSFTextContentConfig alloc] init];
             }
             else if ([customObject.attachment isKindOfClass:[YSFSessionClose class]]) {

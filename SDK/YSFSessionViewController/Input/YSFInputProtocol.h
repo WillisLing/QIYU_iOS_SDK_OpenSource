@@ -6,13 +6,12 @@
 //  Copyright (c) 2015年 NetEase. All rights reserved.
 //
 
-@class YSFMediaItem;
+@class QYMediaItemWithBlock;
 
 
 @protocol YSFInputActionDelegate <NSObject>
 
 @optional
-- (void)onTapMediaItem:(YSFMediaItem *)item;
 
 - (void)onTextChanged:(id)sender;
 

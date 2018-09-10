@@ -17,7 +17,7 @@
 #import "YSFNotification.h"
 #import "YSFKFBypassNotification.h"
 #import "YSFReportQuestion.h"
-#import "YSFCommodityInfoShow.h"
+#import "QYCommodityInfo_private.h"
 #import "YSFInviteEvaluationObject.h"
 #import "NSDictionary+YSFJson.h"
 #import "YSFOrderList.h"
@@ -37,6 +37,7 @@
 #import "YSFFlightList.h"
 #import "YSFFlightDetail.h"
 #import "YSFBotCustomObject.h"
+#import "YSFMixReply.h"
 
 @implementation YSFCustomObjectParser
 - (id<YSF_NIMCustomAttachment>)decodeAttachment:(NSString *)content
@@ -59,7 +60,7 @@
                 object = [YSFInviteEvaluationObject objectByDict:dict];
                 break;
             case YSFCommandSetCommodityInfoRequest:
-                object = [YSFCommodityInfoShow objectByDict:dict];
+                object = [QYCommodityInfo objectByDict:dict];
                 break;
             case YSFCommandRichText:
                 object = [YSFRichText objectByDict:dict];
@@ -103,6 +104,10 @@
                     else if ([templeteId isEqualToString:YSFApiKeyActionList]) {
                         YSFActionList *orderList = [YSFActionList objectByDict:tempateDict];
                         object = orderList;
+                    }
+                    else if ([templeteId isEqualToString:YSFApiKeyMixReply]) {
+                        YSFMixReply *mixReply = [YSFMixReply objectByDict:tempateDict];
+                        object = mixReply;
                     }
                     else if ([templeteId isEqualToString:YSFApiKeyActivePage]) {
                         YSFActivePage *activePage = [YSFActivePage objectByDict:tempateDict];
@@ -159,6 +164,9 @@
                 }
                 else if ([templeteId isEqualToString:@"qiyu_template_botForm"]) {
                     object = [YSFSubmittedBotForm objectByDict:dict];
+                }
+                else if ([templeteId isEqualToString:@"qiyu_template_mixReply"]) {
+                    object = [YSFOrderOperation objectByDict:dict];
                 }
                 else {
                     //assert(false);

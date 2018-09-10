@@ -31,6 +31,7 @@ extern NSString *const YSFKitEventNameTapMoreOrders;
 extern NSString *const YSFKitEventNameTapMoreFlight;
 extern NSString *const YSFKitEventNameTapBot;
 extern NSString *const YSFKitEventNameTapAction;
+extern NSString *const YSFKitEventNameTapMixReply;
 extern NSString *const YSFKitEventNameTapKFBypass;
 extern NSString *const YSFKitEventNameTapCommodityInfo;
 extern NSString *const YSFKitEventNameTapEvaluation;
@@ -39,5 +40,7 @@ extern NSString *const YSFKitEventNameTapRichTextImage;
 extern NSString *const YSFKitEventNameTapSubmittedBotFormImage;
 extern NSString *const YSFKitEventNameTapPushMessageActionUrl;
 extern NSString *const YSFKitEventNameOpenUrl;
+extern NSString *const YSFKitEventNameSendCommdityInfo;
+extern NSString *const YSFKitEventNameTapCommdityAction;
 
 
