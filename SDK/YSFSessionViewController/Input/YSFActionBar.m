@@ -18,12 +18,16 @@
 
 @interface YSFActionBar()
 
-@property (nonatomic,strong)    UIView *splitLine;
-@property (nonatomic,strong)    UIScrollView *scrollView;
+@property (nonatomic, strong) UIView *splitLine;
 
 @end
 
 @implementation YSFActionBar
+
++ (CGFloat)heightForActionBar
+{
+    return YSFActionBarHeight;
+}
 
 - (instancetype)initWithFrame:(CGRect)frame{
     self = [super initWithFrame:frame];
@@ -87,7 +91,7 @@
 
 - (void)layoutSubviews
 {
-    _splitLine.ysf_frameHeight = 1;
+    _splitLine.ysf_frameHeight = 1. / [UIScreen mainScreen].scale;
     _splitLine.ysf_frameWidth = self.ysf_frameWidth;
     _scrollView.ysf_frameWidth = self.ysf_frameWidth;
     _scrollView.ysf_frameHeight = self.ysf_frameHeight;

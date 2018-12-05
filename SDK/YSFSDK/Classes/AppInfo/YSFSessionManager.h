@@ -20,6 +20,7 @@ typedef enum : NSUInteger {
 
 @class QYSource;
 @class QYStaffInfo;
+@class YSF_NIMMessage;
 @protocol YSFSessionProtocol <NSObject>
 
 - (void)didBeginSendReqeustWithShopId:(NSString *)shopId;
@@ -29,6 +30,7 @@ typedef enum : NSUInteger {
                         bypass:(BOOL)bypass
                         shopId:(NSString *)shopId;
 - (void)didClose:(BOOL)evaluate session:(YSFServiceSession *)session shopId:(NSString *)shopId;
+- (void)didRevokeMessage:(YSF_NIMMessage *)message;
 
 @end
 
