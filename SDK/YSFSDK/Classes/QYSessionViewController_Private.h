@@ -98,4 +98,6 @@ NIMSessionMsgDatasourceDelegate, YSFQuickReplyContentViewDelegate>
 - (BOOL)recordFileCanBeSend:(NSString *)filepath;
 - (void)showRecordFileNotSendReason;
 
+- (void)showCameraViewController;
+
 @end

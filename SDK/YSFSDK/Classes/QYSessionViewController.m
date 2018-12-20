@@ -2044,18 +2044,19 @@ YSFCameraViewControllerDelegate>
     [_popTipView dismissAnimated:YES];
     __weak typeof(self) weakSelf = self;
     YSFAlertController * alertController = nil;
+    // MJM MODIFY: 点击退出时，弹窗语义明确，KLA修改
     if ([[[QYSDK sharedSDK] sessionManager] getSessionStateType:_shopId] == YSFSessionStateTypeWaiting) {
-        alertController = [YSFAlertController alertWithTitle:nil message:@"确认退出排队？"];
+        alertController = [YSFAlertController alertWithTitle:nil message:@"确定退出排队"];
         [alertController addCancelActionWithHandler:nil];
-        [alertController addAction:[YSFAlertAction actionWithTitle:@"确定" handler:^(YSFAlertAction * _Nonnull action) {
+        [alertController addAction:[YSFAlertAction actionWithTitle:@"退出" handler:^(YSFAlertAction * _Nonnull action) {
             [weakSelf sendCloseSessionCustomMessage:YES
                           quitSessionViewController:quitSessionViewController
                                showQuitWaitingBlock:showQuitWaitingBlock];
         }]];
     } else {
-        alertController = [YSFAlertController alertWithTitle:nil message:@"确认退出对话？"];
+        alertController = [YSFAlertController alertWithTitle:nil message:@"确定退出对话"];
         [alertController addCancelActionWithHandler:nil];
-        [alertController addAction:[YSFAlertAction actionWithTitle:@"确定" handler:^(YSFAlertAction * _Nonnull action) {
+        [alertController addAction:[YSFAlertAction actionWithTitle:@"退出" handler:^(YSFAlertAction * _Nonnull action) {
             [weakSelf sendCloseSessionCustomMessage:NO
                           quitSessionViewController:quitSessionViewController
                                showQuitWaitingBlock:showQuitWaitingBlock];
