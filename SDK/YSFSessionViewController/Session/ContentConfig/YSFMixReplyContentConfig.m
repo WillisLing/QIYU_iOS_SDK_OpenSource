@@ -11,72 +11,80 @@
 #import "NSString+FileTransfer.h"
 #import "NSAttributedString+YSF.h"
 #import "YSFCoreText.h"
-#import "QYCustomUIConfig.h"
+#import "YSFMixReplyContentView.h"
 
 @implementation YSFMixReplyContentConfig
 
-- (CGSize)contentSize:(CGFloat)cellWidth {
++ (CGFloat)heightForActionListWithInfo:(NSArray<NSString *> *)info
+                    msgContentMaxWidth:(CGFloat)msgContentMaxWidth
+                     contentViewInsets:(UIEdgeInsets)contentViewInsets
+{
+    __block CGFloat actionListsH = 0;
+    [info enumerateObjectsUsingBlock:^(NSString * _Nonnull title, NSUInteger idx, BOOL * _Nonnull stop) {
+        if (title.length) {
+            YSFAttributedLabel *actionLabel = [YSFMixReplyContentView genActionLabel];
+            [actionLabel setText:title];
+            
+            CGFloat actionLabelMaxW = msgContentMaxWidth - (contentViewInsets.left - kYSFMixReplyPointWidth) - kYSFMixReplyActionLabelAndPointMargin - kYSFMixReplyActionLabelAndArrowMargin - kYSFMixReplyPointWidth - kYSFMixReplyArrowRMargin;
+            
+            CGSize size = [actionLabel sizeThatFits:CGSizeMake(actionLabelMaxW, CGFLOAT_HEIGHT_UNKNOWN)];
+            
+            actionListsH += kYSFMixReplyContentNormalMargin;
+            actionListsH += size.height;
+            actionListsH += kYSFMixReplyContentNormalMargin;
+            actionListsH += kYSFMixReplyContentSpacing;
+        }
+    }];
+    
+    return actionListsH;
+}
+
+- (CGSize)contentSize:(CGFloat)cellWidth
+{
     YSF_NIMCustomObject *object = self.message.messageObject;
     YSFMixReply *mixReply = (YSFMixReply *)object.attachment;
     
     CGFloat msgBubbleMaxWidth = (cellWidth - 112);
     CGFloat msgContentMaxWidth = msgBubbleMaxWidth - self.contentViewInsets.left - self.contentViewInsets.right;
-    CGFloat offsetX = 0;
-    __block CGFloat offsetY = 0;
+    CGFloat msgContentFitW = 0;
+    __block CGFloat msgContentFitH = 0;
     
     NSString *labelStr = mixReply.label;
     NSAttributedString *attrStr = [labelStr ysf_attributedString:self.message.isOutgoingMsg];
     if (attrStr.length) {
+
         CGSize size = [attrStr intrinsicContentSizeWithin:CGSizeMake(msgContentMaxWidth, CGFLOAT_HEIGHT_UNKNOWN)];
-        offsetX = msgContentMaxWidth;
-        offsetY += 15.5;
-        offsetY += size.height;
-        offsetY += 13;
+
+        msgContentFitW = msgContentMaxWidth;
+        msgContentFitH += kYSFMixReplyNormalMargin;
+        msgContentFitH += size.height;
+        msgContentFitH += kYSFMixReplyHeaderBtmMargin;
+        msgContentFitH += kYSFMixReplyContentSpacing;
     }
     
+    NSMutableArray<NSString *> *actionList = [[NSMutableArray alloc] init];
     [mixReply.actionList enumerateObjectsUsingBlock:^(YSFAction *action, NSUInteger idx, BOOL *stop) {
         NSString *title = action.validOperation;
         if (title.length) {
-            YSFAttributedLabel *attrLabel = [self getAttrubutedLabel];
-            [attrLabel setText:title];
-            CGSize size = [attrLabel sizeThatFits:CGSizeMake(msgContentMaxWidth - 15, CGFLOAT_MAX)];
-            offsetY += 15.5;
-            offsetY += size.height;
-            offsetY += -9;
+            [actionList addObject:title];
         }
     }];
-    offsetY += 22;
     
-    return CGSizeMake(offsetX, offsetY);
+    msgContentFitH += [[self class] heightForActionListWithInfo:actionList
+                                             msgContentMaxWidth:msgContentMaxWidth
+                                              contentViewInsets:self.contentViewInsets];
+    
+    return CGSizeMake(msgContentFitW, msgContentFitH);
 }
 
-- (NSString *)cellContent {
-    return @"YSFMixReplyContentView";
+- (NSString *)cellContent
+{
+    return NSStringFromClass(YSFMixReplyContentView.class);
 }
 
-- (UIEdgeInsets)contentViewInsets {
-    return UIEdgeInsetsMake(0, 18, 0, 12);
-}
-
-- (YSFAttributedLabel *)getAttrubutedLabel {
-    YSFAttributedLabel *label = [[YSFAttributedLabel alloc] initWithFrame:CGRectZero];
-    label.numberOfLines = 0;
-    label.underLineForLink = NO;
-    label.lineBreakMode = NSLineBreakByWordWrapping;
-    label.font = [UIFont systemFontOfSize:16.f];
-    label.highlightColor = YSFRGBA2(0x1a000000);
-    label.backgroundColor = [UIColor clearColor];
-    QYCustomUIConfig *config = [QYCustomUIConfig sharedInstance];
-    if (self.message.isOutgoingMsg) {
-        label.textColor = config.customMessageTextColor;
-        label.linkColor = config.customMessageHyperLinkColor;
-    } else {
-        label.textColor = config.serviceMessageTextColor;
-        label.linkColor = config.serviceMessageHyperLinkColor;
-    }
-    CGFloat fontSize = self.message.isOutgoingMsg ? config.customMessageTextFontSize : config.serviceMessageTextFontSize;
-    label.font = [UIFont systemFontOfSize:fontSize];
-    return label;
+- (UIEdgeInsets)contentViewInsets
+{
+    return UIEdgeInsetsMake(0, kYSFMixReplyNormalMargin + kYSFMixReplyBubbleArrowMargin, 0, 0);
 }
 
 @end

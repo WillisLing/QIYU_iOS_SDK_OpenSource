@@ -17,6 +17,9 @@
 #import "NSAttributedString+YSF.h"
 #import "NSString+FileTransfer.h"
 
+#import "YSFMixReplyContentConfig.h"
+#import "YSFMixReplyContentView.h"
+
 @implementation YSFMachineContentConfig
 - (CGSize)contentSize:(CGFloat)cellWidth {
     CGFloat msgBubbleMaxWidth = (cellWidth - 112);
@@ -58,18 +61,18 @@
         offsetY += 13;
     } else if ((attachment.answerArray.count == 1 && attachment.isOneQuestionRelevant) || attachment.answerArray.count > 1) {
         offsetX = msgContentMaxWidth;
+        NSMutableArray<NSString *> *answerTitleList = [[NSMutableArray alloc] init];
+        
         [attachment.answerArray enumerateObjectsUsingBlock:^(NSDictionary *dict, NSUInteger idx, BOOL * _Nonnull stop) {
             NSString *question = [dict objectForKey:YSFApiKeyQuestion];
             if (question) {
-                YSFAttributedLabel *questionLabel = [self newAttrubutedLabel];
-                [questionLabel setText:question];
-                CGSize size = [questionLabel sizeThatFits:CGSizeMake(msgContentMaxWidth - 15, CGFLOAT_MAX)];
-                offsetY += 15.5;
-                offsetY += size.height;
-                offsetY += -9;
+                [answerTitleList addObject:question];
             }
         }];
-        offsetY += 22;
+        
+        offsetY += [YSFMixReplyContentConfig heightForActionListWithInfo:answerTitleList
+                                                      msgContentMaxWidth:msgContentMaxWidth
+                                                       contentViewInsets:self.contentViewInsets];
     }
     
     if (attachment.operatorHint && attachment.operatorHintDesc.length > 0) {
@@ -122,7 +125,14 @@
 }
 
 - (UIEdgeInsets)contentViewInsets {
-    return UIEdgeInsetsMake(0, 18, 0, 12);
+    YSF_NIMCustomObject *object = (YSF_NIMCustomObject *)self.message.messageObject;
+    YSFMachineResponse *attachment = (YSFMachineResponse *)object.attachment;
+    if ((attachment.answerArray.count == 1 && attachment.isOneQuestionRelevant) || attachment.answerArray.count > 1){
+        return UIEdgeInsetsMake(0, kYSFMixReplyNormalMargin + kYSFMixReplyBubbleArrowMargin, 0, 0);
+    }
+    else {
+        return UIEdgeInsetsMake(0, 18, 0, 12);
+    }
 }
 
 - (YSFAttributedLabel *)newAttrubutedLabel {

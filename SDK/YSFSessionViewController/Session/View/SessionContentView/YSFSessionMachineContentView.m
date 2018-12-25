@@ -10,7 +10,6 @@
 #import "YSFMessageModel.h"
 #import "QYCustomUIConfig.h"
 #import "YSFMachineResponse.h"
-#import "YSFAttributedLabel.h"
 #import "YSFApiDefines.h"
 #import "YSFCoreText.h"
 #import "UIImageView+YSFWebCache.h"
@@ -18,21 +17,10 @@
 #import "YSFInputEmoticonParser.h"
 #import "YSFRichText.h"
 #import "NSString+FileTransfer.h"
+#import "YSFMixReplyContentView.h"
+#import "UIControl+BlocksKit.h"
 
-
-@interface QuestionLink : NSObject
-
-@property (nonatomic, copy) NSDictionary *questionDict;
-
-@end
-
-
-@implementation QuestionLink
-
-@end
-
-
-@interface YSFSessionMachineContentView() <YSFAttributedLabelDelegate, YSFAttributedTextContentViewDelegate>
+@interface YSFSessionMachineContentView() <YSFAttributedTextContentViewDelegate>
 
 @property (nonatomic, strong) UIView *content;
 @property (nonatomic, strong) NSMutableArray<UIImageView *> *imageViewsArray;
@@ -101,42 +89,41 @@
         [_content addSubview:questionLabel];
         offsetY += size.height;
         offsetY += 13;
-    } else if ((attachment.answerArray.count == 1 && attachment.isOneQuestionRelevant) || attachment.answerArray.count > 1) {
+    }
+    
+    if ((attachment.answerArray.count == 1 && attachment.isOneQuestionRelevant) || attachment.answerArray.count > 1) {
+        CGFloat lineDegree = 1. / [UIScreen mainScreen].scale;
         UIView *splitLine = [[UIView alloc] init];
-        splitLine.backgroundColor = YSFRGB(0xdbdbdb);
-        splitLine.ysf_frameHeight = lineHeight;
-        splitLine.ysf_frameLeft = 5;
-        splitLine.ysf_frameWidth = self.ysf_frameWidth - 5;
-        splitLine.ysf_frameTop = offsetY;
+        splitLine.backgroundColor = YSFRGB(0xf5f5f5);
+        splitLine.frame = CGRectMake(kYSFMixReplyBubbleArrowMargin, offsetY, self.ysf_frameWidth - kYSFMixReplyBubbleArrowMargin, lineDegree);
         [_content addSubview:splitLine];
+        offsetY += kYSFMixReplyContentSpacing;
+        
+        __weak typeof(self) weakSelf = self;
         
         [attachment.answerArray enumerateObjectsUsingBlock:^(NSDictionary *dict, NSUInteger idx, BOOL * _Nonnull stop) {
             NSString *question = [dict objectForKey:YSFApiKeyQuestion];
             if (question) {
-                UIView *point = [[UIView alloc] init];
-                point.backgroundColor = YSFRGB(0xd6d6d6);
-                point.ysf_frameHeight = 7.5;
-                point.ysf_frameLeft = 18;
-                point.ysf_frameWidth = 7.5;
-                point.layer.cornerRadius = 4;
-                point.ysf_frameTop = offsetY + 23;
-                [self.content addSubview:point];
-
-                QuestionLink *questionLink = [[QuestionLink alloc] init];
-                questionLink.questionDict = dict;
+                UIView *itemView = [YSFMixReplyContentView genActionViewWithTitle:question
+                                                                          lastOne:(idx == (attachment.answerArray.count-1))
+                                                                         maxWidth:weakSelf.ysf_frameWidth
+                                                                contentViewInsets:weakSelf.model.contentViewInsets];
+                itemView.ysf_frameTop = offsetY;
+                [weakSelf.content addSubview:itemView];
                 
-                YSFAttributedLabel *questionLabel = [self newAttrubutedLabel];
-                [questionLabel setText:question];
-                [questionLabel addCustomLink:questionLink forRange:NSMakeRange(0, question.length)];
-                CGSize size = [questionLabel sizeThatFits:CGSizeMake(self.model.contentSize.width - 15, CGFLOAT_MAX)];
-                offsetY += 15.5;
-                questionLabel.frame = CGRectMake(self.model.contentViewInsets.left + 15, offsetY, self.model.contentSize.width - 15, size.height);
-                [self.content addSubview:questionLabel];
-                offsetY += size.height;
-                offsetY += -9;
+                UIButton *actionBtn = [[UIButton alloc] initWithFrame:itemView.frame];
+                [weakSelf.content addSubview:actionBtn];
+                [actionBtn ysf_addEventHandler:^(id  _Nonnull sender) {
+                    YSFKitEvent *event = [[YSFKitEvent alloc] init];
+                    event.eventName = YSFKitEventNameTapMachineQuestion;
+                    event.message = weakSelf.model.message;
+                    event.data = dict;
+                    [weakSelf.delegate onCatchEvent:event];
+                } forControlEvents:UIControlEventTouchUpInside];
+                
+                offsetY += itemView.ysf_frameHeight;
             }
         }];
-        offsetY += 22;
     }
     
     if (attachment.operatorHint && attachment.operatorHintDesc.length > 0) {
@@ -305,48 +292,6 @@
             offsetY += 10;  //空白间隙
         }
     }
-}
-
-
-#pragma mark - NIMAttributedLabelDelegate
-- (void)ysfAttributedLabel:(YSFAttributedLabel *)label clickedOnLink:(id)strQuestion {
-    if ([strQuestion isKindOfClass:[QuestionLink class]]) {
-        QuestionLink *questionLink = strQuestion;
-        YSFKitEvent *event = [[YSFKitEvent alloc] init];
-        event.eventName = YSFKitEventNameTapMachineQuestion;
-        event.message = self.model.message;
-        event.data = questionLink.questionDict;
-        [self.delegate onCatchEvent:event];
-    } else {
-        YSFKitEvent *event = [[YSFKitEvent alloc] init];
-        event.eventName = YSFKitEventNameTapLabelLink;
-        event.message = self.model.message;
-        event.data = strQuestion;
-        [self.delegate onCatchEvent:event];
-    }
-}
-
-- (YSFAttributedLabel *)newAttrubutedLabel {
-    YSFAttributedLabel *answerLabel = [[YSFAttributedLabel alloc] initWithFrame:CGRectZero];
-    answerLabel.delegate = self;
-    answerLabel.numberOfLines = 0;
-    answerLabel.underLineForLink = NO;
-    answerLabel.autoDetectNumber = NO;
-    answerLabel.lineBreakMode = NSLineBreakByWordWrapping;
-    answerLabel.font = [UIFont systemFontOfSize:16.f];
-    answerLabel.highlightColor = YSFRGBA2(0x1a000000);
-    answerLabel.backgroundColor = [UIColor clearColor];
-    QYCustomUIConfig *uiConfig = [QYCustomUIConfig sharedInstance];
-    if (self.model.message.isOutgoingMsg) {
-        answerLabel.textColor = uiConfig.customMessageTextColor;
-        answerLabel.linkColor = uiConfig.customMessageHyperLinkColor;
-    } else {
-        answerLabel.textColor = uiConfig.serviceMessageTextColor;
-        answerLabel.linkColor = uiConfig.serviceMessageHyperLinkColor;
-    }
-    CGFloat fontSize = self.model.message.isOutgoingMsg ? uiConfig.customMessageTextFontSize : uiConfig.serviceMessageTextFontSize;
-    answerLabel.font = [UIFont systemFontOfSize:fontSize];
-    return answerLabel;
 }
 
 - (void)layoutSubviews {

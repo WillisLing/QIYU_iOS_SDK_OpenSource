@@ -7,7 +7,12 @@
 //
 
 #import "YSFBaseSessionContentConfig.h"
+@class YSFMixReply;
 
 @interface YSFMixReplyContentConfig : YSFBaseSessionContentConfig <YSFSessionContentConfig>
+
++ (CGFloat)heightForActionListWithInfo:(NSArray<NSString *> *)info
+                    msgContentMaxWidth:(CGFloat)msgContentMaxWidth
+                     contentViewInsets:(UIEdgeInsets)contentViewInsets;
 
 @end

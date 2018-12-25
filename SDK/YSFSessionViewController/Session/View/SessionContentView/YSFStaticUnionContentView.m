@@ -9,6 +9,11 @@
 #import "YSFInputEmoticonManager.h"
 #import "YSFInputEmoticonParser.h"
 
+CGFloat const kYSFActionItemsMargin = 15;
+CGFloat const kYSFActionItemsTBMargin = 20;
+CGFloat const kYSFActionButtonHeight = 30;
+static CGFloat const kYSFActionButtonLRMargin = 20;
+
 @interface YSFStaticUnionContentView() <YSFAttributedTextContentViewDelegate>
 
 @property (nonatomic, strong) UIView *content;
@@ -44,7 +49,7 @@
     for (YSFLinkItem *item in staticUnion.linkItems) {
         
         if ([item.type isEqualToString:YSFApiKeyText]) {
-            offsetY += 13;
+            offsetY += kYSFActionItemsMargin;
             
             UILabel * content;
             content = [UILabel new];
@@ -62,7 +67,7 @@
             offsetY += content.ysf_frameHeight;
         }
         else if ([item.type isEqualToString:YSFApiKeyImage]) {
-            offsetY += 13;
+            offsetY += kYSFActionItemsMargin;
             
             if (item.imageUrl.length > 0) {
                 UIImageView *imageView = [UIImageView new];
@@ -133,7 +138,7 @@
             }
         }
         else if ([item.type isEqualToString:YSFApiKeyLink]) {
-            offsetY += 13;
+            offsetY += kYSFActionItemsMargin;
             
             UIButton *actionButton = [UIButton new];
             [_content addSubview:actionButton];
@@ -144,13 +149,14 @@
             action.validOperation = item.label;
             action.type = item.linkType;
             actionButton.layer.borderWidth = 0.5;
-            actionButton.titleLabel.font = [UIFont systemFontOfSize:15];
-            actionButton.layer.borderColor = YSFRGB(0x5092E1).CGColor;
-            actionButton.layer.cornerRadius = 4;
-            [actionButton setTitleColor:YSFRGB(0x5092E1) forState:UIControlStateNormal];
+            actionButton.titleLabel.font = [UIFont systemFontOfSize:14];
+            actionButton.layer.borderColor = YSFRGB(0x61A7EA).CGColor;
+            actionButton.layer.cornerRadius = kYSFActionButtonHeight/2;
+            [actionButton setTitleColor:YSFRGB(0x61A7EA) forState:UIControlStateNormal];
+            [actionButton setBackgroundColor:YSFRGB(0xf0f6fb)];
             [actionButton setTitle:item.label forState:UIControlStateNormal];
-            actionButton.frame = CGRectMake(18, offsetY,
-                                            self.model.contentSize.width - 33, 34);
+            actionButton.frame = CGRectMake(kYSFActionButtonLRMargin, offsetY,
+                                            (self.model.contentSize.width - self.model.contentViewInsets.left - (kYSFActionButtonLRMargin*2)), kYSFActionButtonHeight);
             __weak typeof(self) weakSelf = self;
             [actionButton ysf_addEventHandler:^(id  _Nonnull sender) {
                 [weakSelf onClickAction:action];
@@ -159,10 +165,10 @@
                 actionButton.ysf_frameLeft -= 5;
             }
             
-            offsetY += 34;
+            offsetY += actionButton.ysf_frameHeight;
         }
         else if ([item.type isEqualToString:YSFApiKeyRichText]) {
-            offsetY += 13;
+            offsetY += kYSFActionItemsMargin;
             
             YSFAttributedTextView *label = [[YSFAttributedTextView alloc] initWithFrame:CGRectInfinite];
             label.shouldDrawImages = NO;

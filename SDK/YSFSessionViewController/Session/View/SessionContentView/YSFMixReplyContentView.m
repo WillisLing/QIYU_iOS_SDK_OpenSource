@@ -13,15 +13,82 @@
 #import "NSString+FileTransfer.h"
 #import "NSAttributedString+YSF.h"
 #import "YSFCoreText.h"
-#import "QYCustomUIConfig.h"
 
-@interface YSFMixReplyContentView() <YSFAttributedLabelDelegate>
+CGFloat const kYSFMixReplyNormalMargin = 15;
+CGFloat const kYSFMixReplyHeaderBtmMargin = 12;
+CGFloat const kYSFMixReplyContentNormalMargin = 7.5f;
+CGFloat const kYSFMixReplyContentSpacing = 0.5f;
+CGFloat const kYSFMixReplyArrowRMargin = 20.f;
+CGFloat const kYSFMixReplyPointWidth = 4;
+CGFloat const kYSFMixReplyActionLabelAndPointMargin = 10;
+CGFloat const kYSFMixReplyActionLabelAndArrowMargin = 10;
+CGFloat const kYSFMixReplyBubbleArrowMargin = 5;
+
+@interface YSFMixReplyContentView()
 
 @property (nonatomic, strong) UIView *contentView;
 
 @end
 
 @implementation YSFMixReplyContentView
+
+#pragma mark ActionView
+
++ (UIView *)genActionViewWithTitle:(NSString *)title
+                           lastOne:(BOOL)lastOne
+                          maxWidth:(CGFloat)maxWidth
+                 contentViewInsets:(UIEdgeInsets)contentViewInsets
+{
+    UIView *actionView = [[UIView alloc] initWithFrame:CGRectMake(0, 0, maxWidth, 0)];
+    
+    UIView *point = [[UIView alloc] initWithFrame:CGRectMake(contentViewInsets.left, 0, kYSFMixReplyPointWidth, kYSFMixReplyPointWidth)];
+    point.backgroundColor = YSFRGB(0xd6d6d6);
+    point.layer.cornerRadius = kYSFMixReplyPointWidth/2;
+    [actionView addSubview:point];
+    
+    UIImage *arrowImage = [UIImage ysf_imageInKit:@"qe_mix_reply_item_arrow"];
+    UIImageView *arrow = [[UIImageView alloc] initWithImage:arrowImage];
+    arrow.ysf_frameSize = arrowImage.size;
+    arrow.ysf_frameRight = actionView.ysf_frameWidth - kYSFMixReplyArrowRMargin;
+    [actionView addSubview:arrow];
+    
+    YSFAttributedLabel *actionLabel = [self genActionLabel];
+    [actionLabel setText:title];
+    [actionView addSubview:actionLabel];
+    CGFloat actionLabelMAxW = maxWidth - (contentViewInsets.left - kYSFMixReplyPointWidth) - kYSFMixReplyActionLabelAndPointMargin - kYSFMixReplyActionLabelAndArrowMargin - kYSFMixReplyPointWidth - kYSFMixReplyArrowRMargin;
+    CGSize size = [actionLabel sizeThatFits:CGSizeMake(actionLabelMAxW, CGFLOAT_MAX)];
+    actionLabel.ysf_frameTop = kYSFMixReplyContentNormalMargin;
+    actionLabel.ysf_frameLeft = point.ysf_frameRight + kYSFMixReplyActionLabelAndPointMargin;
+    actionLabel.ysf_frameWidth = actionLabelMAxW;
+    actionLabel.ysf_frameHeight = size.height;
+    
+    point.ysf_frameTop = actionLabel.ysf_frameTop + kYSFMixReplyContentNormalMargin;
+    actionView.ysf_frameHeight = actionLabel.ysf_frameBottom + kYSFMixReplyContentNormalMargin;
+    
+    arrow.ysf_frameCenterY = actionView.ysf_frameCenterY;
+    
+    if (!lastOne) {
+        CGFloat lineDegree = 1. / [UIScreen mainScreen].scale;
+        UIView *splitLine = [[UIView alloc] initWithFrame:CGRectMake(kYSFMixReplyBubbleArrowMargin, 0, actionView.ysf_frameWidth - kYSFMixReplyBubbleArrowMargin, lineDegree)];
+        splitLine.backgroundColor = YSFRGB(0xf0f0f0);
+        splitLine.ysf_frameBottom = actionView.ysf_frameBottom;
+        [actionView addSubview:splitLine];
+    }
+    
+    return actionView;
+}
+
++ (YSFAttributedLabel *)genActionLabel
+{
+    YSFAttributedLabel *label = [[YSFAttributedLabel alloc] initWithFrame:CGRectZero];
+    label.numberOfLines = 0;
+    label.lineBreakMode = NSLineBreakByWordWrapping;
+    label.font = [UIFont systemFontOfSize:14.f];
+    label.backgroundColor = [UIColor clearColor];
+    label.textColor = YSFRGB(0x666666);
+    
+    return label;
+}
 
 - (instancetype)initSessionMessageContentView {
     self = [super initSessionMessageContentView];
@@ -41,7 +108,8 @@
     _contentView.ysf_frameHeight = self.ysf_frameHeight;
 }
 
-- (void)refresh:(YSFMessageModel *)data {
+- (void)refresh:(YSFMessageModel *)data
+{
     [super refresh:data];
     YSF_NIMCustomObject *object = data.message.messageObject;
     YSFMixReply *mixReply = (YSFMixReply *)object.attachment;
@@ -49,84 +117,56 @@
     [_contentView ysf_removeAllSubviews];
     __block CGFloat offsetY = self.model.contentViewInsets.top;
     
-    YSFAttributedTextView *attrLabel = [[YSFAttributedTextView alloc] initWithFrame:CGRectInfinite];
-    attrLabel.shouldDrawImages = NO;
-    attrLabel.backgroundColor = [UIColor clearColor];
+    YSFAttributedTextView *attrHeader = [[YSFAttributedTextView alloc] initWithFrame:CGRectInfinite];
+    attrHeader.shouldDrawImages = NO;
+    attrHeader.backgroundColor = [UIColor clearColor];
     
     NSString *labelStr = mixReply.label;
-    attrLabel.attributedString = [labelStr ysf_attributedString:self.model.message.isOutgoingMsg];
-    if (attrLabel.attributedString.length) {
-        offsetY += 15.5;
-        attrLabel.ysf_frameWidth = self.model.contentSize.width;
-        CGSize size = [attrLabel.attributedTextContentView sizeThatFits:CGSizeZero];
-        attrLabel.frame = CGRectMake(self.model.contentViewInsets.left, offsetY, self.model.contentSize.width, size.height);
-        [attrLabel layoutSubviews];
-        [_contentView addSubview:attrLabel];
-        offsetY += size.height;
-        offsetY += 13;
+    attrHeader.attributedString = [labelStr ysf_attributedString:self.model.message.isOutgoingMsg];
+    if (attrHeader.attributedString.length) {
+        offsetY += kYSFMixReplyNormalMargin;
+        attrHeader.ysf_frameWidth = self.model.contentSize.width;
+        CGSize size = [attrHeader.attributedTextContentView sizeThatFits:CGSizeZero];
+        attrHeader.frame = CGRectMake(self.model.contentViewInsets.left, offsetY, self.model.contentSize.width, size.height);
+        [attrHeader layoutSubviews];
+        [_contentView addSubview:attrHeader];
+        offsetY += attrHeader.ysf_frameHeight;
+        offsetY += kYSFMixReplyHeaderBtmMargin;
     }
     
     CGFloat lineDegree = 1. / [UIScreen mainScreen].scale;
     UIView *splitLine = [[UIView alloc] init];
-    splitLine.backgroundColor = YSFRGB(0xdbdbdb);
-    splitLine.frame = CGRectMake(5, offsetY, self.ysf_frameWidth - 5, lineDegree);
+    splitLine.backgroundColor = YSFRGB(0xf5f5f5);
+    splitLine.frame = CGRectMake(kYSFMixReplyBubbleArrowMargin, offsetY, self.ysf_frameWidth - kYSFMixReplyBubbleArrowMargin, lineDegree);
     [_contentView addSubview:splitLine];
+    offsetY += kYSFMixReplyContentSpacing;
     
     __weak typeof(self) weakSelf = self;
+    
     [mixReply.actionList enumerateObjectsUsingBlock:^(YSFAction *action, NSUInteger idx, BOOL * _Nonnull stop) {
+        
         NSString *title = action.validOperation;
         if (title.length) {
-            UIView *point = [[UIView alloc] init];
-            point.backgroundColor = YSFRGB(0xd6d6d6);
-            point.layer.cornerRadius = 4;
-            point.frame = CGRectMake(18, offsetY + 23, 7.5, 7.5);
-            [weakSelf.contentView addSubview:point];
+            UIView *itemView = [[weakSelf class] genActionViewWithTitle:title
+                                                                lastOne:(idx == (mixReply.actionList.count-1))
+                                                               maxWidth:self.ysf_frameWidth
+                                                      contentViewInsets:self.model.contentViewInsets];
+            itemView.ysf_frameTop = offsetY;
+            [weakSelf.contentView addSubview:itemView];
             
-            YSFAttributedLabel *actionLabel = [self getAttrubutedLabel];
-            [actionLabel setText:title];
-            [actionLabel addCustomLink:action forRange:NSMakeRange(0, title.length)];
-            CGSize size = [actionLabel sizeThatFits:CGSizeMake(self.model.contentSize.width - 15, CGFLOAT_MAX)];
-            offsetY += 15.5;
-            actionLabel.frame = CGRectMake(self.model.contentViewInsets.left + 15, offsetY, self.model.contentSize.width - 15, size.height);
-            [weakSelf.contentView addSubview:actionLabel];
-            offsetY += size.height;
-            offsetY += -9;
+            UIButton *actionBtn = [[UIButton alloc] initWithFrame:itemView.frame];
+            [weakSelf.contentView addSubview:actionBtn];
+            [actionBtn ysf_addEventHandler:^(id  _Nonnull sender) {
+                YSFKitEvent *event = [[YSFKitEvent alloc] init];
+                event.eventName = YSFKitEventNameTapMixReply;
+                event.message = weakSelf.model.message;
+                event.data = action;
+                [weakSelf.delegate onCatchEvent:event];
+            } forControlEvents:UIControlEventTouchUpInside];
+            
+            offsetY += itemView.ysf_frameHeight;
         }
     }];
-    offsetY += 22;
-}
-
-- (YSFAttributedLabel *)getAttrubutedLabel {
-    YSFAttributedLabel *label = [[YSFAttributedLabel alloc] initWithFrame:CGRectZero];
-    label.delegate = self;
-    label.numberOfLines = 0;
-    label.underLineForLink = NO;
-    label.autoDetectNumber = NO;
-    label.lineBreakMode = NSLineBreakByWordWrapping;
-    label.font = [UIFont systemFontOfSize:16.f];
-    label.highlightColor = YSFRGBA2(0x1a000000);
-    label.backgroundColor = [UIColor clearColor];
-    QYCustomUIConfig *config = [QYCustomUIConfig sharedInstance];
-    if (self.model.message.isOutgoingMsg) {
-        label.textColor = config.customMessageTextColor;
-        label.linkColor = config.customMessageHyperLinkColor;
-    } else {
-        label.textColor = config.serviceMessageTextColor;
-        label.linkColor = config.serviceMessageHyperLinkColor;
-    }
-    CGFloat fontSize = self.model.message.isOutgoingMsg ? config.customMessageTextFontSize : config.serviceMessageTextFontSize;
-    label.font = [UIFont systemFontOfSize:fontSize];
-    return label;
-}
-
-- (void)ysfAttributedLabel:(YSFAttributedLabel *)label clickedOnLink:(id)linkData {
-    if ([linkData isKindOfClass:[YSFAction class]]) {
-        YSFKitEvent *event = [[YSFKitEvent alloc] init];
-        event.eventName = YSFKitEventNameTapMixReply;
-        event.message = self.model.message;
-        event.data = linkData;
-        [self.delegate onCatchEvent:event];
-    }
 }
 
 @end

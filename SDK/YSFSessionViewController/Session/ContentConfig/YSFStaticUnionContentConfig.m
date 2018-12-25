@@ -16,7 +16,7 @@
 #import "NSString+FileTransfer.h"
 #import "YSFCoreText.h"
 #import "NSAttributedString+YSF.h"
-
+#import "YSFStaticUnionContentView.h"
 
 @implementation YSFStaticUnionContentConfig
 - (CGSize)contentSize:(CGFloat)cellWidth
@@ -29,7 +29,7 @@
     
     for (YSFLinkItem *item in staticUnion.linkItems) {
         if ([item.type isEqualToString:YSFApiKeyText]) {
-            offsetY += 13;
+            offsetY += kYSFActionItemsMargin;
             UILabel *content = [UILabel new];
             content.font = [UIFont systemFontOfSize:16];
             content.numberOfLines = 0;
@@ -39,7 +39,7 @@
             offsetY += content.ysf_frameHeight;
         }
         else if ([item.type isEqualToString:YSFApiKeyImage]) {
-            offsetY += 13;
+            offsetY += kYSFActionItemsMargin;
 
             if (item.imageUrl.length > 0) {
 
@@ -69,10 +69,10 @@
             }
         }
         else if ([item.type isEqualToString:YSFApiKeyLink]) {
-            offsetY += 13 + 34;
+            offsetY += kYSFActionItemsMargin + kYSFActionButtonHeight;
         }
         else if ([item.type isEqualToString:YSFApiKeyRichText]) {
-            offsetY += 13;
+            offsetY += kYSFActionItemsMargin;
             
             NSAttributedString *attributedString = [item.label ysf_attributedString:self.message.isOutgoingMsg];
             CGSize size = [attributedString intrinsicContentSizeWithin:CGSizeMake(CGFLOAT_WIDTH_UNKNOWN, CGFLOAT_HEIGHT_UNKNOWN)];
@@ -84,7 +84,7 @@
         }
     }
     
-    offsetY += 13;
+    offsetY += kYSFActionItemsTBMargin;
     
     return CGSizeMake(msgContentMaxWidth, offsetY);
 }
